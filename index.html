@@ -1,0 +1,1579 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Phase Portrait Explorer — 2×2 Linear Systems</title>
+  <style>
+    :root{
+      --bg:#0b1020; --panel:#0f1730; --txt:#e8ecff; --muted:#a8b0d6;
+      --accent:#6ee7ff; --accent2:#a78bfa; --warn:#ffcc66; --bad:#ff6b8b; --good:#49f59a;
+      --line:#2a355f;
+      --radius:18px;
+    }
+    *{box-sizing:border-box;}
+    body{
+      margin:0;
+      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial;
+      background: radial-gradient(1200px 700px at 20% 0%, #17214a 0%, var(--bg) 55%), var(--bg);
+      color:var(--txt);
+      height:100dvh;
+      overflow:hidden;
+    }
+
+    .app{
+      display:grid;
+      grid-template-columns: 360px 1fr 380px;
+      grid-template-rows: 1fr 240px;
+      grid-template-areas:
+        "left main right"
+        "left bottom right";
+      gap:14px;
+      padding:14px;
+      height:100dvh;
+    }
+
+    /* Medium screens: 2 columns */
+    @media (max-width: 1100px){
+      body{ overflow:auto; height:auto; }
+      .app{
+        height:auto;
+        grid-template-columns: 1fr 380px;
+        grid-template-rows: 520px 240px auto;
+        grid-template-areas:
+          "main right"
+          "bottom right"
+          "left left";
+      }
+    }
+
+    /* Small screens: stacked */
+    @media (max-width: 820px){
+      body{ overflow:auto; height:auto; }
+      .app{
+        height:auto;
+        grid-template-columns: 1fr;
+        grid-template-rows: 520px 240px auto auto;
+        grid-template-areas:
+          "main"
+          "bottom"
+          "right"
+          "left";
+      }
+    }
+
+    .card{
+      background: linear-gradient(180deg, rgba(255,255,255,0.03), rgba(255,255,255,0.01));
+      border:1px solid rgba(255,255,255,0.08);
+      box-shadow: 0 12px 40px rgba(0,0,0,0.35);
+      border-radius: var(--radius);
+      overflow:hidden;
+      min-height:0;
+    }
+    header{
+      padding:14px 16px;
+      display:flex; align-items:center; justify-content:space-between;
+      border-bottom:1px solid rgba(255,255,255,0.08);
+      background: rgba(0,0,0,0.2);
+      gap:12px;
+    }
+    header .title{ font-weight:800; letter-spacing:0.2px; }
+    header .subtitle{ font-size:12px; color:var(--muted); margin-top:2px; }
+    .headerLeft{display:flex; flex-direction:column;}
+
+    .section{ padding:14px 16px; border-bottom:1px solid rgba(255,255,255,0.07); }
+    .section:last-child{ border-bottom:none; }
+
+    .left{ grid-area:left; display:flex; flex-direction:column; gap:14px; min-height:0; }
+    .main{ grid-area:main; position:relative; min-height:0; }
+    .right{ grid-area:right; display:flex; flex-direction:column; gap:14px; min-height:0; }
+    .bottom{ grid-area:bottom; display:grid; grid-template-columns: 1fr 360px; gap:14px; min-height:0; }
+    @media (max-width: 820px){
+      .bottom{ grid-template-columns: 1fr; }
+    }
+
+    .row{ display:flex; gap:10px; align-items:center; }
+    .row.wrap{ flex-wrap:wrap; }
+    .label{ font-size:12px; color:var(--muted); }
+    .small{ font-size:12px; color:var(--muted); }
+    .mono{ font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace; }
+
+    input[type="number"]{
+      width:76px;
+      padding:9px 10px;
+      border-radius:12px;
+      border:1px solid rgba(255,255,255,0.12);
+      background: rgba(0,0,0,0.25);
+      color:var(--txt);
+      outline:none;
+    }
+    input[type="number"]:focus{ border-color: rgba(110,231,255,0.6); box-shadow: 0 0 0 3px rgba(110,231,255,0.15); }
+    input[type="range"]{ width:100%; }
+
+    button{
+      cursor:pointer;
+      padding:9px 12px;
+      border-radius:12px;
+      border:1px solid rgba(255,255,255,0.12);
+      background: rgba(255,255,255,0.06);
+      color:var(--txt);
+      font-weight:700;
+      transition: transform .06s ease, background .2s ease, border-color .2s ease;
+    }
+    button:hover{ background: rgba(255,255,255,0.10); }
+    button:active{ transform: translateY(1px); }
+    button.primary{ background: rgba(110,231,255,0.14); border-color: rgba(110,231,255,0.35); }
+    button.danger{ background: rgba(255,107,139,0.12); border-color: rgba(255,107,139,0.35); }
+    button:disabled{ opacity:0.45; cursor:not-allowed; }
+
+    .pill{
+      display:inline-flex; align-items:center; gap:8px;
+      padding:8px 10px; border-radius:999px;
+      border:1px solid rgba(255,255,255,0.12);
+      background: rgba(0,0,0,0.18);
+      font-size:12px; color:var(--muted);
+      white-space:nowrap;
+    }
+    .dot{ width:9px; height:9px; border-radius:50%; background: var(--muted); }
+
+    .grid2{ display:grid; grid-template-columns: 1fr 1fr; gap:10px; margin-top:10px; }
+
+    .eigBox{
+      margin-top:10px; padding:10px;
+      border-radius:14px;
+      background: rgba(0,0,0,0.20);
+      border:1px solid rgba(255,255,255,0.08);
+    }
+    .kv{ display:flex; justify-content:space-between; gap:10px; font-size:12px; color:var(--muted); }
+    .kv b{ color:var(--txt); font-weight:800; }
+    .kv .right{ text-align:right; }
+
+    .chk{
+      display:inline-flex; align-items:center; gap:8px;
+      padding:7px 10px;
+      border-radius:999px;
+      border:1px solid rgba(255,255,255,0.12);
+      background: rgba(0,0,0,0.14);
+      font-size:12px;
+      color:var(--muted);
+      user-select:none;
+    }
+    .chk input{ transform: translateY(0.5px); accent-color: #6ee7ff; }
+
+    .canvasWrap{ position:absolute; inset:0; display:flex; flex-direction:column; }
+    .canvasTopBar{
+      display:flex; align-items:center; justify-content:space-between;
+      padding:10px 12px;
+      border-bottom:1px solid rgba(255,255,255,0.08);
+      background: rgba(0,0,0,0.18);
+      gap:10px;
+    }
+    .canvasTopBar .hint{ font-size:12px; color:var(--muted); }
+    .canvasHolder{ position:relative; flex:1; }
+    canvas{ display:block; width:100%; height:100%; }
+
+    .miniHeader{ padding:10px 12px; border-bottom:1px solid rgba(255,255,255,0.08); background: rgba(0,0,0,0.18); }
+    .miniHeader .title{ font-weight:850; }
+    .miniBody{ padding:10px 12px; min-height:0; }
+
+    .footerBar{ display:flex; gap:10px; align-items:center; justify-content:space-between; flex-wrap:wrap; }
+    .legend{ display:flex; gap:12px; align-items:center; font-size:12px; color:var(--muted); }
+    .sw{ width:12px; height:3px; border-radius:2px; background: var(--accent); }
+    .sw2{ width:12px; height:3px; border-radius:2px; background: var(--accent2); }
+
+    .help{ font-size:12px; color:var(--muted); line-height:1.35; }
+    .help b{ color:var(--txt); }
+
+    .kbd{
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      border:1px solid rgba(255,255,255,0.18);
+      background: rgba(0,0,0,0.15);
+      border-bottom-color: rgba(255,255,255,0.08);
+      padding:2px 6px; border-radius:8px;
+    }
+
+    .presetList{ display:flex; flex-direction:column; gap:8px; max-height: 330px; overflow:auto; padding-right:6px; }
+    .presetList::-webkit-scrollbar{ width:8px; }
+    .presetList::-webkit-scrollbar-thumb{ background: rgba(255,255,255,0.10); border-radius:999px; }
+    .presetBtn{
+      text-align:left;
+      padding:10px 10px;
+      border-radius:14px;
+      border:1px solid rgba(255,255,255,0.10);
+      background: rgba(0,0,0,0.18);
+    }
+    .presetBtn.active{
+      border-color: rgba(110,231,255,0.45);
+      background: rgba(110,231,255,0.10);
+    }
+    .presetBtn .name{ font-weight:850; }
+    .presetBtn .desc{ font-size:12px; color:var(--muted); margin-top:3px; }
+
+    details{
+      border: 1px solid rgba(255,255,255,0.10);
+      background: rgba(0,0,0,0.14);
+      border-radius: 14px;
+      padding: 10px 10px;
+    }
+    details summary{
+      cursor:pointer;
+      font-weight:850;
+      color: var(--txt);
+      list-style:none;
+    }
+    details summary::-webkit-details-marker{ display:none; }
+    details .content{ margin-top:8px; color: var(--muted); font-size:12px; line-height:1.45; }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <!-- LEFT PANEL -->
+    <div class="left">
+      <div class="card">
+        <header>
+          <div class="headerLeft">
+            <div class="title">Phase Portrait Explorer</div>
+            <div class="subtitle">2×2 linear system: <span class="mono">ẋ = A x</span></div>
+          </div>
+          <span class="pill" id="classPill"><span class="dot" id="classDot"></span><span id="classText">—</span></span>
+        </header>
+
+        <div class="section">
+          <div class="label">Matrix A</div>
+          <div class="grid2">
+            <div class="row">
+              <input id="a11" type="number" step="0.1" />
+              <input id="a12" type="number" step="0.1" />
+            </div>
+            <div class="row">
+              <input id="a21" type="number" step="0.1" />
+              <input id="a22" type="number" step="0.1" />
+            </div>
+          </div>
+
+          <div class="eigBox">
+            <div class="kv"><span>trace</span> <b class="mono" id="traceVal">—</b></div>
+            <div class="kv"><span>det</span> <b class="mono" id="detVal">—</b></div>
+            <div class="kv"><span>discriminant</span> <b class="mono" id="discVal">—</b></div>
+            <hr style="border:none;border-top:1px solid rgba(255,255,255,0.08);margin:10px 0;" />
+            <div class="kv"><span>λ₁</span> <b class="mono" id="eig1">—</b></div>
+            <div class="kv"><span>λ₂</span> <b class="mono" id="eig2">—</b></div>
+            <div class="kv" id="eigvecRow" style="margin-top:8px;"></div>
+            <div class="kv" id="modeRow" style="margin-top:8px;"></div>
+          </div>
+
+          <div class="small" id="trajCount" style="margin-top:10px;">Trajectories: 0</div>
+          <div class="help" style="margin-top:8px;">
+            <b>Examples</b> auto-seed the right number of trajectories.<br>
+            • Click phase plane to add a new trajectory • Click a trajectory to select it (nearest point).<br>
+            • Shortcuts: <span class="kbd">Space</span> play/pause, <span class="kbd">C</span> clear, <span class="kbd">Backspace</span> undo.
+          </div>
+        </div>
+
+        <div class="section">
+          <div class="label">View</div>
+          <div class="row wrap" style="margin-top:10px;">
+            <label class="chk"><input type="checkbox" id="animAll" checked><span>Animate particles</span></label>
+            <label class="chk"><input type="checkbox" id="showTrails" checked><span>Trails</span></label>
+            <label class="chk"><input type="checkbox" id="showFlow" checked><span>Vector field</span></label>
+            <label class="chk"><input type="checkbox" id="showEigen" checked><span>Eigenlines</span></label>
+            <label class="chk"><input type="checkbox" id="showOnlySel"><span>Only selected</span></label>
+          </div>
+
+          <div style="margin-top:12px;" class="small mono">Speed</div>
+          <div class="row" style="gap:12px;">
+            <input id="speed" type="range" min="0.1" max="2.5" step="0.1" value="1.0" />
+            <span class="pill"><span class="dot" style="background:var(--accent);"></span><span id="speedVal" class="mono">1.0×</span></span>
+          </div>
+        </div>
+
+        <div class="section">
+          <div class="label">Parameter Explorer (entries of A)</div>
+          <div style="margin-top:8px;" class="small mono">a11</div>
+          <input id="s11" type="range" min="-5" max="5" step="0.1" />
+          <div style="margin-top:8px;" class="small mono">a12</div>
+          <input id="s12" type="range" min="-5" max="5" step="0.1" />
+          <div style="margin-top:8px;" class="small mono">a21</div>
+          <input id="s21" type="range" min="-5" max="5" step="0.1" />
+          <div style="margin-top:8px;" class="small mono">a22</div>
+          <input id="s22" type="range" min="-5" max="5" step="0.1" />
+        </div>
+      </div>
+    </div>
+
+    <!-- MAIN CANVAS -->
+    <div class="card main">
+      <div class="canvasWrap">
+        <div class="canvasTopBar">
+          <div class="hint">Phase portrait. Click to add • click a curve to select • double-click empty space to clear.</div>
+          <div class="row wrap" style="justify-content:flex-end;">
+            <span class="pill"><span class="dot" style="background:var(--accent);"></span>selected</span>
+            <span class="pill"><span class="dot" style="background:rgba(232,236,255,0.40);"></span>others</span>
+          </div>
+        </div>
+        <div class="canvasHolder" id="phaseHolder">
+          <canvas id="phaseCanvas"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <!-- RIGHT PANEL -->
+    <div class="right">
+      <div class="card">
+        <div class="miniHeader">
+          <div class="title">Trace–Determinant Map</div>
+          <div class="subtitle small">Shaded regions. Click to jump (snaps near boundaries).</div>
+        </div>
+        <div class="miniBody" style="height:380px;">
+          <canvas id="tdCanvas"></canvas>
+        </div>
+        <div class="miniBody" style="padding-top:0;">
+          <div class="help">
+            Boundaries: <span class="mono">det=0</span> (degenerate), <span class="mono">det&lt;0</span> (saddle), and
+            <span class="mono">det=tr²/4</span> (node–focus split). Click near a boundary to snap.
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="miniHeader">
+          <div class="title">Examples</div>
+          <div class="subtitle small">Each example auto-seeds the requested number of trajectories</div>
+        </div>
+        <div class="miniBody">
+          <div class="presetList" id="presetList"></div>
+          <details style="margin-top:12px;">
+            <summary>Why trace–det works</summary>
+            <div class="content">
+              For <span class="mono">ẋ=Ax</span>, eigenvalues satisfy <span class="mono">λ² − (tr A)λ + det A = 0</span>.
+              Their signs and whether they're real/complex determine the qualitative picture (node/focus/saddle/center).
+            </div>
+          </details>
+        </div>
+      </div>
+    </div>
+
+    <!-- BOTTOM: time series + time controls -->
+    <div class="card bottom">
+      <div class="card" style="margin:0; border:none; background:transparent; box-shadow:none;">
+        <div class="miniHeader">
+          <div class="title">Time Series</div>
+          <div class="subtitle small">Selected trajectory (ends when integration leaves bounds)</div>
+        </div>
+        <div class="miniBody" style="height:calc(100% - 42px);">
+          <canvas id="tsCanvas" style="height:100%;"></canvas>
+        </div>
+      </div>
+
+      <div class="card" style="margin:0; border:none; background:transparent; box-shadow:none;">
+        <div class="miniHeader">
+          <div class="title">Time</div>
+          <div class="subtitle small">Scrub • play stops at the end</div>
+        </div>
+        <div class="miniBody" style="display:flex; flex-direction:column; gap:12px; height:calc(100% - 42px);">
+          <div class="row wrap" style="justify-content:space-between;">
+            <button id="play" class="primary">Play</button>
+            <button id="rewind">Rewind</button>
+            <span class="pill"><span class="dot" style="background:var(--warn);"></span><span id="tReadout" class="mono">t = 0.00</span></span>
+          </div>
+
+          <input id="timeSlider" type="range" min="0" max="1" step="0.001" value="0" />
+
+          <div class="footerBar">
+            <div class="legend">
+              <span class="sw"></span> x₁(t)
+              <span class="sw2"></span> x₂(t)
+            </div>
+            <div class="small">Space toggles play/pause</div>
+          </div>
+
+          <div class="help">
+            <b>Next best move:</b> the analysis box now reports the dominant time scale (decay / growth) and oscillation period when complex eigenvalues exist.
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+<script>
+(() => {
+  // ---------- DOM ----------
+  const $ = (id) => document.getElementById(id);
+  const inputs = { a11: $("a11"), a12: $("a12"), a21: $("a21"), a22: $("a22") };
+  const sliders = { s11: $("s11"), s12: $("s12"), s21: $("s21"), s22: $("s22") };
+
+  const traceVal = $("traceVal"), detVal = $("detVal"), discVal = $("discVal");
+  const eig1El = $("eig1"), eig2El = $("eig2"), eigvecRow = $("eigvecRow"), modeRow = $("modeRow");
+  const classText = $("classText"), classDot = $("classDot");
+  const trajCountEl = $("trajCount");
+
+  const phaseCanvas = $("phaseCanvas");
+  const phaseHolder = $("phaseHolder");
+  const tsCanvas = $("tsCanvas");
+  const tdCanvas = $("tdCanvas");
+
+  const timeSlider = $("timeSlider");
+  const tReadout = $("tReadout");
+  const playBtn = $("play");
+  const rewindBtn = $("rewind");
+
+  const animAllCb = $("animAll");
+  const showTrailsCb = $("showTrails");
+  const showFlowCb = $("showFlow");
+  const showEigenCb = $("showEigen");
+  const showOnlySelCb = $("showOnlySel");
+  const speedSlider = $("speed");
+  const speedVal = $("speedVal");
+
+  const presetListEl = $("presetList");
+
+  // ---------- Helpers ----------
+  const EPS = 1e-9;
+  const clamp = (x,a,b) => Math.max(a, Math.min(b,x));
+  const fmt = (x) => {
+    if (!isFinite(x)) return "∞";
+    const ax = Math.abs(x);
+    if (ax >= 1000) return x.toExponential(2);
+    if (ax > 0 && ax < 1e-3) return x.toExponential(2);
+    return x.toFixed(3);
+  };
+  const cfmt = (re, im) => {
+    if (Math.abs(im) < 1e-8) return fmt(re);
+    const s = im >= 0 ? "+" : "−";
+    return `${fmt(re)} ${s} ${fmt(Math.abs(im))}i`;
+  };
+  const hypot2 = (x,y) => Math.hypot(x,y);
+
+  const COLORS = [
+    "rgba(255,107,139,0.95)", "rgba(110,231,255,0.95)", "rgba(167,139,250,0.95)",
+    "rgba(73,245,154,0.95)",  "rgba(255,204,102,0.95)", "rgba(232,236,255,0.70)"
+  ];
+
+  // ---------- Linear algebra ----------
+  function mulAx(A, x){
+    return [A[0][0]*x[0] + A[0][1]*x[1], A[1][0]*x[0] + A[1][1]*x[1]];
+  }
+  function rk4Step(A, x, dt){
+    const k1 = mulAx(A, x);
+    const x2 = [x[0] + 0.5*dt*k1[0], x[1] + 0.5*dt*k1[1]];
+    const k2 = mulAx(A, x2);
+    const x3 = [x[0] + 0.5*dt*k2[0], x[1] + 0.5*dt*k2[1]];
+    const k3 = mulAx(A, x3);
+    const x4 = [x[0] + dt*k3[0], x[1] + dt*k3[1]];
+    const k4 = mulAx(A, x4);
+    return [
+      x[0] + (dt/6)*(k1[0] + 2*k2[0] + 2*k3[0] + k4[0]),
+      x[1] + (dt/6)*(k1[1] + 2*k2[1] + 2*k3[1] + k4[1])
+    ];
+  }
+
+  function eig2x2(A){
+    const a=A[0][0], b=A[0][1], c=A[1][0], d=A[1][1];
+    const tr = a + d;
+    const det = a*d - b*c;
+    const disc = tr*tr - 4*det;
+    let l1 = {re:0, im:0}, l2 = {re:0, im:0};
+    if (disc >= -1e-12){
+      const s = Math.sqrt(Math.max(0, disc));
+      l1.re = 0.5*(tr + s);
+      l2.re = 0.5*(tr - s);
+    } else {
+      const s = Math.sqrt(-disc);
+      l1.re = 0.5*tr; l2.re = 0.5*tr;
+      l1.im = 0.5*s;  l2.im = -0.5*s;
+    }
+
+    // eigenvectors for real eigenvalues
+    const evecs = [];
+    if (Math.abs(l1.im) < 1e-10 && Math.abs(l2.im) < 1e-10){
+      for (const lam of [l1.re, l2.re]){
+        const m11 = a - lam, m22 = d - lam;
+        let v = null;
+        if (Math.abs(b) > Math.abs(c)){
+          v = [b, -m11];
+        } else if (Math.abs(c) > EPS){
+          v = [-m22, c];
+        } else if (Math.abs(b) > EPS){
+          v = [b, -m11];
+        } else {
+          if (Math.abs(m11) < Math.abs(m22)) v = [1,0]; else v = [0,1];
+        }
+        const n = hypot2(v[0], v[1]) || 1;
+        v = [v[0]/n, v[1]/n];
+        evecs.push(v);
+      }
+    }
+
+    return { tr, det, disc, l1, l2, evecs };
+  }
+
+  function classify(tr, det, disc){
+    if (Math.abs(det) < 1e-10) return { name:"non-isolated (det≈0)", color:"var(--warn)", key:"degenerate" };
+    if (det < 0) return { name:"saddle", color:"var(--bad)", key:"saddle" };
+    if (disc > 1e-10){
+      if (tr < -1e-10) return { name:"stable node", color:"var(--good)", key:"stable_node" };
+      if (tr >  1e-10) return { name:"unstable node", color:"var(--bad)", key:"unstable_node" };
+      return { name:"node (trace≈0)", color:"var(--warn)", key:"node" };
+    }
+    if (Math.abs(disc) <= 1e-10){
+      if (tr < -1e-10) return { name:"stable degenerate node", color:"var(--good)", key:"degenerate" };
+      if (tr >  1e-10) return { name:"unstable degenerate node", color:"var(--bad)", key:"degenerate" };
+      return { name:"degenerate (trace≈0)", color:"var(--warn)", key:"degenerate" };
+    }
+    if (Math.abs(tr) < 1e-10) return { name:"center", color:"var(--accent2)", key:"center" };
+    if (tr < 0) return { name:"stable focus", color:"var(--good)", key:"stable_focus" };
+    return { name:"unstable focus", color:"var(--bad)", key:"unstable_focus" };
+  }
+
+  // ---------- State ----------
+  const state = {
+    A: [[0,-1],[1,0]],
+    view: { range: 5 },
+    traj: [],
+    selectedId: null,
+    dt: 0.02,
+    steps: 1600,
+    t: 0,
+    playing: false,
+    speed: 1.0,
+    isDraggingTime: false,
+    recomputeToken: 0,
+    lastPresetKey: "center"
+  };
+
+  function setA(a11,a12,a21,a22){ state.A = [[a11,a12],[a21,a22]]; }
+  function syncControlsFromA(){
+    const a11=state.A[0][0], a12=state.A[0][1], a21=state.A[1][0], a22=state.A[1][1];
+    inputs.a11.value=a11; inputs.a12.value=a12; inputs.a21.value=a21; inputs.a22.value=a22;
+    sliders.s11.value=a11; sliders.s12.value=a12; sliders.s21.value=a21; sliders.s22.value=a22;
+  }
+
+  function getSelected(){
+    if (!state.selectedId) return null;
+    return state.traj.find(t => t.id === state.selectedId) || null;
+  }
+
+  function updateTrajCount(){
+    const n = state.traj.length;
+    const sel = getSelected();
+    if (!sel) trajCountEl.textContent = `Trajectories: ${n}`;
+    else trajCountEl.textContent = `Trajectories: ${n} • selected x₀=[${fmt(sel.x0[0])}, ${fmt(sel.x0[1])}]`;
+  }
+
+  // ---------- Trajectories ----------
+  function integrateTrajectory(x0){
+    const dt = state.dt;
+    const steps = state.steps;
+    const A = state.A;
+    const diverge = state.view.range * 6;
+
+    const forward = new Array(steps+1);
+    forward[0] = [x0[0], x0[1]];
+    let lastF = 0;
+
+    let x = [x0[0], x0[1]];
+    for (let i=1; i<=steps; i++){
+      x = rk4Step(A, x, dt);
+      if (!isFinite(x[0]) || !isFinite(x[1]) || hypot2(x[0],x[1]) > diverge){
+        forward[i] = null;
+        for (let j=i+1; j<=steps; j++) forward[j] = null;
+        break;
+      }
+      forward[i] = [x[0], x[1]];
+      lastF = i;
+    }
+
+    const back = new Array(steps+1);
+    back[0] = [x0[0], x0[1]];
+    let xB = [x0[0], x0[1]];
+    for (let i=1; i<=steps; i++){
+      xB = rk4Step(A, xB, -dt);
+      if (!isFinite(xB[0]) || !isFinite(xB[1]) || hypot2(xB[0],xB[1]) > diverge){
+        back[i] = null;
+        for (let j=i+1; j<=steps; j++) back[j] = null;
+        break;
+      }
+      back[i] = [xB[0], xB[1]];
+    }
+
+    return { x0:[x0[0],x0[1]], forward, back, endIndex:lastF, tmax: lastF*dt };
+  }
+
+  function addTrajectory(x0, color){
+    const id = Math.random().toString(16).slice(2);
+    const data = integrateTrajectory(x0);
+    const item = { id, color: color ?? COLORS[state.traj.length % COLORS.length], ...data };
+    state.traj.push(item);
+    state.selectedId = id;
+    state.t = 0;
+    timeSlider.value = 0;
+    updateTrajCount();
+    updateAnalysisPanel();
+    renderTimeSeries();
+  }
+
+  function undoTrajectory(){
+    if (state.traj.length === 0) return;
+    const popped = state.traj.pop();
+    if (state.selectedId === popped.id){
+      state.selectedId = state.traj.length ? state.traj[state.traj.length-1].id : null;
+      state.t = 0;
+      timeSlider.value = 0;
+    }
+    updateTrajCount();
+    updateAnalysisPanel();
+    renderTimeSeries();
+  }
+
+  function clearTrajectories(){
+    state.traj = [];
+    state.selectedId = null;
+    state.t = 0;
+    timeSlider.value = 0;
+    state.playing = false;
+    playBtn.textContent = "Play";
+    updateTrajCount();
+    updateAnalysisPanel();
+    renderTimeSeries();
+  }
+
+  function recomputeAllTrajectories(){
+    const token = ++state.recomputeToken;
+    const old = state.traj.map(t => ({id:t.id, x0:t.x0, color:t.color}));
+    setTimeout(() => {
+      if (token !== state.recomputeToken) return;
+      state.traj = old.map(o => ({ id:o.id, color:o.color, ...integrateTrajectory(o.x0) }));
+      if (state.selectedId && !state.traj.some(t => t.id === state.selectedId)){
+        state.selectedId = state.traj[state.traj.length-1]?.id ?? null;
+      }
+      const sel = getSelected();
+      const tmax = sel ? sel.tmax : 1;
+      timeSlider.max = Math.max(0.001, tmax);
+      state.t = clamp(state.t, 0, tmax);
+      timeSlider.value = state.t;
+      updateTrajCount();
+      updateAnalysisPanel();
+      renderTimeSeries();
+    }, 0);
+  }
+
+  // ---------- Example seeding rules (exact counts requested) ----------
+  function seedsForExample(exampleKey){
+    const r = state.view.range * 0.85;
+    const pts = [];
+    const add = (x,y) => pts.push([x,y]);
+
+    const threeRadii = () => {
+      const radii = [0.35*r, 0.60*r, 0.85*r];
+      radii.forEach((rr, i) => {
+        const th = i * 0.55; // slight angle offset
+        add(rr*Math.cos(th), rr*Math.sin(th));
+      });
+    };
+
+    const threeAnglesOneRadius = () => {
+      const rr = 0.78*r;
+      for (let i=0;i<3;i++){
+        const th = i * (2*Math.PI/3);
+        add(rr*Math.cos(th), rr*Math.sin(th));
+      }
+    };
+
+    const nodePattern = () => {
+      const rr = 0.75*r;
+      // 2 for each quadrant (8)
+      const quadAngles = [
+        [Math.PI/10, Math.PI/4],                 // Q1
+        [Math.PI*3/4, Math.PI*9/10],             // Q2
+        [Math.PI*11/10, Math.PI*5/4],            // Q3
+        [Math.PI*7/4, Math.PI*19/10],            // Q4 (wrap)
+      ];
+      quadAngles.forEach(pair => {
+        pair.forEach(th => add(rr*Math.cos(th), rr*Math.sin(th)));
+      });
+      // 1 for each axis (x-axis, y-axis) = 2
+      add(rr, 0);
+      add(0, rr);
+    };
+
+    const saddlePattern = () => {
+      // 2 for each region (4 regions) => 8
+      const eig = eig2x2(state.A);
+      if (eig.evecs.length === 2){
+        const v1 = eig.evecs[0], v2 = eig.evecs[1];
+        const dirs = [
+          [v1[0]+v2[0], v1[1]+v2[1]],
+          [v1[0]-v2[0], v1[1]-v2[1]],
+          [-v1[0]+v2[0], -v1[1]+v2[1]],
+          [-v1[0]-v2[0], -v1[1]-v2[1]]
+        ];
+        dirs.forEach(d => {
+          const n = hypot2(d[0],d[1]) || 1;
+          const u = [d[0]/n, d[1]/n];
+          add(0.55*r*u[0], 0.55*r*u[1]);
+          add(0.82*r*u[0], 0.82*r*u[1]);
+        });
+      } else {
+        // fallback: quadrants
+        const rr = 0.75*r;
+        const ths = [Math.PI/8, 3*Math.PI/8, 5*Math.PI/8, 7*Math.PI/8, 9*Math.PI/8, 11*Math.PI/8, 13*Math.PI/8, 15*Math.PI/8];
+        ths.forEach((th, i) => add(rr*Math.cos(th), rr*Math.sin(th)));
+      }
+    };
+
+    const degenerate3 = () => {
+      // 3 points: on main eigenline, off it, and a perpendicular-ish point
+      const eig = eig2x2(state.A);
+      const rr = 0.82*r;
+      if (eig.evecs.length >= 1){
+        const v = eig.evecs[0];
+        add(rr*v[0], rr*v[1]);
+        // perpendicular
+        const p = [-v[1], v[0]];
+        add(0.7*rr*p[0], 0.7*rr*p[1]);
+        // off-axis
+        add(0.55*rr*(v[0]+0.6*p[0]), 0.55*rr*(v[1]+0.6*p[1]));
+      } else {
+        threeAnglesOneRadius();
+      }
+    };
+
+    switch(exampleKey){
+      case "center":          threeRadii(); break; // 3
+      case "stable_focus":    threeRadii(); break; // 3
+      case "unstable_focus":  threeRadii(); break; // 3
+      case "stable_node":     nodePattern(); break; // 2 per quadrant + 1 per axis
+      case "unstable_node":   nodePattern(); break;
+      case "saddle":          saddlePattern(); break; // 2 per region
+      case "degenerate":      degenerate3(); break; // 3
+      case "skewed":          threeAnglesOneRadius(); break; // 3
+      default:                threeAnglesOneRadius();
+    }
+    return pts;
+  }
+
+  function seedExample(exampleKey){
+    clearTrajectories();
+    const pts = seedsForExample(exampleKey);
+    pts.forEach((p,i) => addTrajectory(p, COLORS[i % COLORS.length]));
+  }
+
+  // ---------- Rendering ----------
+  function resizeCanvasToDisplaySize(canvas){
+    const dpr = window.devicePixelRatio || 1;
+    const rect = canvas.getBoundingClientRect();
+    const w = Math.max(2, Math.floor(rect.width * dpr));
+    const h = Math.max(2, Math.floor(rect.height * dpr));
+    if (canvas.width !== w || canvas.height !== h){
+      canvas.width = w; canvas.height = h;
+      return true;
+    }
+    return false;
+  }
+
+  function worldToCanvas(x,y, canvas){
+    const w = canvas.width, h = canvas.height;
+    const r = state.view.range;
+    const px = (x / r) * (w/2) + w/2;
+    const py = h/2 - (y / r) * (h/2);
+    return [px,py];
+  }
+
+  function canvasToWorld(px,py, canvas){
+    const w=canvas.width, h=canvas.height;
+    const r = state.view.range;
+    const x = ((px - w/2) / (w/2)) * r;
+    const y = ((h/2 - py) / (h/2)) * r;
+    return [x,y];
+  }
+
+  function drawGrid(ctx, canvas){
+    const w=canvas.width, h=canvas.height;
+    const r=state.view.range;
+    ctx.save();
+    ctx.clearRect(0,0,w,h);
+
+    const g = ctx.createLinearGradient(0,0,0,h);
+    g.addColorStop(0, "rgba(255,255,255,0.02)");
+    g.addColorStop(1, "rgba(0,0,0,0.08)");
+    ctx.fillStyle = g;
+    ctx.fillRect(0,0,w,h);
+
+    const step = r <= 4 ? 1 : (r <= 8 ? 2 : 5);
+    ctx.strokeStyle = "rgba(255,255,255,0.06)";
+    ctx.lineWidth = 1;
+    for (let x=-r; x<=r; x+=step){
+      const [px1,py1] = worldToCanvas(x,-r,canvas);
+      const [px2,py2] = worldToCanvas(x, r,canvas);
+      ctx.beginPath(); ctx.moveTo(px1,py1); ctx.lineTo(px2,py2); ctx.stroke();
+    }
+    for (let y=-r; y<=r; y+=step){
+      const [px1,py1] = worldToCanvas(-r,y,canvas);
+      const [px2,py2] = worldToCanvas( r,y,canvas);
+      ctx.beginPath(); ctx.moveTo(px1,py1); ctx.lineTo(px2,py2); ctx.stroke();
+    }
+
+    ctx.strokeStyle = "rgba(255,255,255,0.22)";
+    ctx.lineWidth = 1.5;
+    let a = worldToCanvas(-r,0,canvas), b=worldToCanvas(r,0,canvas);
+    ctx.beginPath(); ctx.moveTo(a[0],a[1]); ctx.lineTo(b[0],b[1]); ctx.stroke();
+    a = worldToCanvas(0,-r,canvas); b=worldToCanvas(0,r,canvas);
+    ctx.beginPath(); ctx.moveTo(a[0],a[1]); ctx.lineTo(b[0],b[1]); ctx.stroke();
+
+    ctx.fillStyle = "rgba(232,236,255,0.75)";
+    ctx.font = `${Math.max(12, Math.floor(12*(window.devicePixelRatio||1)))}px ui-sans-serif`;
+    const [xLabX,xLabY] = worldToCanvas(r*0.92, 0.25, canvas);
+    ctx.fillText("x₁", xLabX, xLabY);
+    const [yLabX,yLabY] = worldToCanvas(0.2, r*0.92, canvas);
+    ctx.fillText("x₂", yLabX, yLabY);
+
+    ctx.restore();
+  }
+
+  function drawVectorField(ctx, canvas){
+    if (!showFlowCb.checked) return;
+    const r=state.view.range;
+    const A = state.A;
+
+    const gridN = 13;
+    ctx.save();
+    ctx.strokeStyle = "rgba(110,231,255,0.10)";
+    ctx.lineWidth = 1;
+
+    for (let i=0;i<gridN;i++){
+      for (let j=0;j<gridN;j++){
+        const x = -r + (2*r)*(i/(gridN-1));
+        const y = -r + (2*r)*(j/(gridN-1));
+        const v = mulAx(A,[x,y]);
+        const speed = hypot2(v[0],v[1]);
+        if (speed < 1e-5) continue;
+        const u = [v[0]/speed, v[1]/speed];
+        const len = (r*0.06) * (0.6 + 0.4*Math.tanh(speed/2));
+        const x2 = x + u[0]*len;
+        const y2 = y + u[1]*len;
+
+        const p1 = worldToCanvas(x,y,canvas);
+        const p2 = worldToCanvas(x2,y2,canvas);
+
+        ctx.beginPath();
+        ctx.moveTo(p1[0],p1[1]);
+        ctx.lineTo(p2[0],p2[1]);
+        ctx.stroke();
+
+        const ang = Math.atan2(p2[1]-p1[1], p2[0]-p1[0]);
+        const ah = 6*(window.devicePixelRatio||1);
+        ctx.beginPath();
+        ctx.moveTo(p2[0],p2[1]);
+        ctx.lineTo(p2[0] - ah*Math.cos(ang-0.5), p2[1] - ah*Math.sin(ang-0.5));
+        ctx.lineTo(p2[0] - ah*Math.cos(ang+0.5), p2[1] - ah*Math.sin(ang+0.5));
+        ctx.closePath();
+        ctx.fillStyle = "rgba(110,231,255,0.10)";
+        ctx.fill();
+      }
+    }
+    ctx.restore();
+  }
+
+  function drawEigenLines(ctx, canvas, eig){
+    if (!showEigenCb.checked) return;
+    if (!eig.evecs || eig.evecs.length === 0) return;
+    const r=state.view.range;
+    ctx.save();
+    ctx.strokeStyle = "rgba(167,139,250,0.32)";
+    ctx.lineWidth = 2;
+
+    for (let k=0;k<eig.evecs.length;k++){
+      const v = eig.evecs[k];
+      const p1 = worldToCanvas(-r*v[0], -r*v[1], canvas);
+      const p2 = worldToCanvas( r*v[0],  r*v[1], canvas);
+      ctx.beginPath(); ctx.moveTo(p1[0],p1[1]); ctx.lineTo(p2[0],p2[1]); ctx.stroke();
+    }
+    ctx.restore();
+  }
+
+  function drawTrajectoryCurves(ctx, canvas){
+    const sel = getSelected();
+    const onlySel = showOnlySelCb.checked;
+
+    for (const tr of state.traj){
+      const isSel = sel && tr.id === sel.id;
+      if (onlySel && !isSel) continue;
+
+      ctx.save();
+      ctx.lineWidth = isSel ? 2.4 : 1.4;
+      ctx.strokeStyle = tr.color ? tr.color.replace("0.95","0.65") : (isSel ? "rgba(110,231,255,0.65)" : "rgba(232,236,255,0.22)");
+      ctx.beginPath();
+
+      let started = false;
+      for (let i=tr.back.length-1; i>=0; i--){
+        const p = tr.back[i];
+        if (!p){ started=false; continue; }
+        const [px,py] = worldToCanvas(p[0],p[1],canvas);
+        if (!started){ ctx.moveTo(px,py); started=true; }
+        else ctx.lineTo(px,py);
+      }
+      for (let i=0;i<tr.forward.length;i++){
+        const p = tr.forward[i];
+        if (!p){ started=false; continue; }
+        const [px,py] = worldToCanvas(p[0],p[1],canvas);
+        if (!started){ ctx.moveTo(px,py); started=true; }
+        else ctx.lineTo(px,py);
+      }
+      ctx.stroke();
+      ctx.restore();
+    }
+  }
+
+  function drawParticles(ctx, canvas){
+    if (!animAllCb.checked) return;
+    const sel = getSelected();
+    const t = state.t;
+    const dt = state.dt;
+    const onlySel = showOnlySelCb.checked;
+
+    for (const tr of state.traj){
+      const isSel = sel && tr.id === sel.id;
+      if (onlySel && !isSel) continue;
+
+      const idx = Math.min(tr.endIndex, Math.max(0, Math.floor(t/dt)));
+      const p = tr.forward[idx];
+      if (!p) continue;
+
+      // optional trail behind current point
+      if (showTrailsCb.checked){
+        ctx.save();
+        ctx.lineWidth = isSel ? 3.0 : 2.0;
+        const tail = 80;
+        const start = Math.max(0, idx - tail);
+        for (let i=start+1;i<=idx;i++){
+          const p1 = tr.forward[i-1], p2 = tr.forward[i];
+          if (!p1 || !p2) continue;
+          const a = (i-start)/Math.max(1, (idx-start));
+          ctx.globalAlpha = (isSel ? 0.85 : 0.55) * a;
+          ctx.strokeStyle = tr.color || "rgba(110,231,255,0.95)";
+          const c1 = worldToCanvas(p1[0],p1[1],canvas);
+          const c2 = worldToCanvas(p2[0],p2[1],canvas);
+          ctx.beginPath(); ctx.moveTo(c1[0],c1[1]); ctx.lineTo(c2[0],c2[1]); ctx.stroke();
+        }
+        ctx.restore();
+      }
+
+      const [px,py] = worldToCanvas(p[0],p[1],canvas);
+
+      // glow
+      ctx.save();
+      const rad = 18*(window.devicePixelRatio||1);
+      const g = ctx.createRadialGradient(px,py,0,px,py,rad);
+      const col = (tr.color || "rgba(110,231,255,0.95)").replace("0.95","0.55");
+      g.addColorStop(0, col);
+      g.addColorStop(1, "rgba(0,0,0,0)");
+      ctx.fillStyle = g;
+      ctx.beginPath(); ctx.arc(px,py,rad,0,Math.PI*2); ctx.fill();
+
+      // core dot
+      ctx.globalAlpha = 1;
+      ctx.fillStyle = "rgba(255,255,255,0.95)";
+      ctx.beginPath(); ctx.arc(px,py,5.3*(window.devicePixelRatio||1),0,Math.PI*2); ctx.fill();
+      ctx.fillStyle = tr.color || "rgba(110,231,255,0.95)";
+      ctx.beginPath(); ctx.arc(px,py,3.1*(window.devicePixelRatio||1),0,Math.PI*2); ctx.fill();
+
+      // highlight selected ring
+      if (isSel){
+        ctx.strokeStyle = "rgba(110,231,255,0.95)";
+        ctx.lineWidth = 2.2*(window.devicePixelRatio||1);
+        ctx.beginPath(); ctx.arc(px,py,7.2*(window.devicePixelRatio||1),0,Math.PI*2); ctx.stroke();
+      }
+      ctx.restore();
+    }
+  }
+
+  function renderPhase(){
+    resizeCanvasToDisplaySize(phaseCanvas);
+    const ctx = phaseCanvas.getContext("2d");
+    drawGrid(ctx, phaseCanvas);
+    drawVectorField(ctx, phaseCanvas);
+    const eig = eig2x2(state.A);
+    drawEigenLines(ctx, phaseCanvas, eig);
+
+    // origin
+    ctx.save();
+    const [ox,oy] = worldToCanvas(0,0,phaseCanvas);
+    ctx.fillStyle = "rgba(255,255,255,0.85)";
+    ctx.beginPath(); ctx.arc(ox,oy,3.2*(window.devicePixelRatio||1),0,Math.PI*2); ctx.fill();
+    ctx.restore();
+
+    drawTrajectoryCurves(ctx, phaseCanvas);
+    drawParticles(ctx, phaseCanvas);
+  }
+
+  // ---------- Time series ----------
+  function renderTimeSeries(){
+    resizeCanvasToDisplaySize(tsCanvas);
+    const ctx = tsCanvas.getContext("2d");
+    const w=tsCanvas.width, h=tsCanvas.height;
+    ctx.clearRect(0,0,w,h);
+
+    const bg = ctx.createLinearGradient(0,0,0,h);
+    bg.addColorStop(0, "rgba(255,255,255,0.03)");
+    bg.addColorStop(1, "rgba(0,0,0,0.10)");
+    ctx.fillStyle = bg;
+    ctx.fillRect(0,0,w,h);
+
+    const sel = getSelected();
+    if (!sel || sel.endIndex === 0){
+      ctx.fillStyle = "rgba(232,236,255,0.60)";
+      ctx.font = `${14*(window.devicePixelRatio||1)}px ui-sans-serif`;
+      ctx.fillText("No trajectory selected — click the phase plane or pick an example.", 12*(window.devicePixelRatio||1), 24*(window.devicePixelRatio||1));
+      return;
+    }
+
+    const dt=state.dt;
+    const tmax=Math.max(dt, sel.tmax);
+    const n=sel.endIndex+1;
+
+    let maxAbs = 1;
+    for (let i=0;i<n;i++){
+      const p = sel.forward[i];
+      if (!p) break;
+      maxAbs = Math.max(maxAbs, Math.abs(p[0]), Math.abs(p[1]));
+    }
+    maxAbs = Math.min(maxAbs, state.view.range*6);
+
+    const padL = 40*(window.devicePixelRatio||1);
+    const padR = 14*(window.devicePixelRatio||1);
+    const padT = 14*(window.devicePixelRatio||1);
+    const padB = 24*(window.devicePixelRatio||1);
+
+    const plotW = w - padL - padR;
+    const plotH = h - padT - padB;
+
+    // axes
+    ctx.strokeStyle = "rgba(255,255,255,0.18)";
+    ctx.lineWidth = 1.2;
+    ctx.beginPath(); ctx.moveTo(padL, padT); ctx.lineTo(padL, padT+plotH); ctx.lineTo(padL+plotW, padT+plotH); ctx.stroke();
+
+    const y0 = padT + plotH/2;
+    ctx.strokeStyle = "rgba(255,255,255,0.10)";
+    ctx.beginPath(); ctx.moveTo(padL, y0); ctx.lineTo(padL+plotW, y0); ctx.stroke();
+
+    ctx.fillStyle = "rgba(232,236,255,0.65)";
+    ctx.font = `${12*(window.devicePixelRatio||1)}px ui-sans-serif`;
+    ctx.fillText("x", 10*(window.devicePixelRatio||1), padT + 12*(window.devicePixelRatio||1));
+    ctx.fillText("t", padL+plotW-10*(window.devicePixelRatio||1), padT+plotH+18*(window.devicePixelRatio||1));
+
+    ctx.fillStyle = "rgba(232,236,255,0.55)";
+    ctx.font = `${11*(window.devicePixelRatio||1)}px ui-sans-serif`;
+    ctx.fillText(fmt(maxAbs), 6*(window.devicePixelRatio||1), padT + 10*(window.devicePixelRatio||1));
+    ctx.fillText(fmt(-maxAbs), 6*(window.devicePixelRatio||1), padT + plotH - 2*(window.devicePixelRatio||1));
+
+    function xToPx(t){ return padL + (t/tmax)*plotW; }
+    function yToPx(val){ return padT + (0.5 - 0.5*(val/maxAbs))*plotH; }
+
+    // x1
+    ctx.save();
+    ctx.strokeStyle = "rgba(110,231,255,0.95)";
+    ctx.lineWidth = 2.2;
+    ctx.beginPath();
+    let ok=false;
+    for (let i=0;i<n;i++){
+      const p=sel.forward[i];
+      if (!p) { ok=false; continue; }
+      const tt=i*dt;
+      const px=xToPx(tt), py=yToPx(p[0]);
+      if(!ok){ ctx.moveTo(px,py); ok=true; }
+      else ctx.lineTo(px,py);
+    }
+    ctx.stroke();
+    ctx.restore();
+
+    // x2
+    ctx.save();
+    ctx.strokeStyle = "rgba(167,139,250,0.90)";
+    ctx.lineWidth = 2.2;
+    ctx.beginPath();
+    ok=false;
+    for (let i=0;i<n;i++){
+      const p=sel.forward[i];
+      if (!p) { ok=false; continue; }
+      const tt=i*dt;
+      const px=xToPx(tt), py=yToPx(p[1]);
+      if(!ok){ ctx.moveTo(px,py); ok=true; }
+      else ctx.lineTo(px,py);
+    }
+    ctx.stroke();
+    ctx.restore();
+
+    // cursor
+    ctx.save();
+    ctx.strokeStyle = "rgba(255,204,102,0.85)";
+    ctx.lineWidth = 1.6;
+    const cx = xToPx(clamp(state.t, 0, tmax));
+    ctx.beginPath(); ctx.moveTo(cx, padT); ctx.lineTo(cx, padT+plotH); ctx.stroke();
+    ctx.restore();
+
+    // current values
+    const idx = Math.min(sel.endIndex, Math.max(0, Math.floor(state.t/dt)));
+    const pNow = sel.forward[idx];
+    if (pNow){
+      ctx.save();
+      ctx.fillStyle = "rgba(232,236,255,0.70)";
+      ctx.font = `${12*(window.devicePixelRatio||1)}px ui-sans-serif`;
+      ctx.fillText(`x₁=${fmt(pNow[0])}, x₂=${fmt(pNow[1])}`, padL, padT + 12*(window.devicePixelRatio||1));
+      ctx.restore();
+    }
+  }
+
+  // ---------- Trace–Det map ----------
+  function renderTraceDet(){
+    resizeCanvasToDisplaySize(tdCanvas);
+    const ctx = tdCanvas.getContext("2d");
+    const w=tdCanvas.width, h=tdCanvas.height;
+    ctx.clearRect(0,0,w,h);
+
+    const bg = ctx.createLinearGradient(0,0,0,h);
+    bg.addColorStop(0,"rgba(255,255,255,0.03)");
+    bg.addColorStop(1,"rgba(0,0,0,0.10)");
+    ctx.fillStyle = bg;
+    ctx.fillRect(0,0,w,h);
+
+    const pad = 16*(window.devicePixelRatio||1);
+    const plotW = w - 2*pad;
+    const plotH = h - 2*pad;
+
+    const trMax = 7.0;
+    const detMin = -7.0;
+    const detMax = 12.0;
+
+    const xToPx = (tr) => pad + ((tr + trMax)/(2*trMax))*plotW;
+    const yToPx = (det) => pad + (1 - (det - detMin)/(detMax-detMin))*plotH;
+
+    // Shaded: det<0 (saddle)
+    ctx.save();
+    ctx.fillStyle = "rgba(255,107,139,0.10)";
+    ctx.beginPath();
+    ctx.rect(pad, yToPx(0), plotW, yToPx(detMin)-yToPx(0));
+    ctx.fill();
+    ctx.restore();
+
+    // For det>0: split by trace sign and parabola det=tr^2/4 into node vs focus regions.
+    function fillRegion(traceSign, aboveParabola, color){
+      ctx.save();
+      ctx.fillStyle = color;
+      ctx.beginPath();
+
+      const trStart = traceSign < 0 ? -trMax : 0;
+      const trEnd   = traceSign < 0 ? 0 : trMax;
+
+      const steps = 220;
+      if (aboveParabola){
+        for (let i=0;i<=steps;i++){
+          const tr = trStart + (trEnd-trStart)*(i/steps);
+          const det = (tr*tr)/4;
+          const px = xToPx(tr), py = yToPx(det);
+          if (i===0) ctx.moveTo(px,py); else ctx.lineTo(px,py);
+        }
+        ctx.lineTo(xToPx(trEnd), yToPx(detMax));
+        ctx.lineTo(xToPx(trStart), yToPx(detMax));
+      } else {
+        ctx.moveTo(xToPx(trStart), yToPx(0));
+        ctx.lineTo(xToPx(trEnd), yToPx(0));
+        for (let i=steps;i>=0;i--){
+          const tr = trStart + (trEnd-trStart)*(i/steps);
+          const det = (tr*tr)/4;
+          ctx.lineTo(xToPx(tr), yToPx(det));
+        }
+      }
+      ctx.closePath();
+      ctx.fill();
+      ctx.restore();
+    }
+
+    fillRegion(-1, false, "rgba(73,245,154,0.10)");   // stable node-ish
+    fillRegion(-1, true,  "rgba(73,245,154,0.06)");   // stable focus-ish
+    fillRegion(+1, false, "rgba(255,107,139,0.10)");  // unstable node-ish
+    fillRegion(+1, true,  "rgba(255,107,139,0.06)");  // unstable focus-ish
+
+    // axes
+    ctx.strokeStyle = "rgba(255,255,255,0.20)";
+    ctx.lineWidth = 1.2;
+    ctx.beginPath();
+    ctx.moveTo(xToPx(-trMax), yToPx(0)); ctx.lineTo(xToPx(trMax), yToPx(0));
+    ctx.moveTo(xToPx(0), yToPx(detMin)); ctx.lineTo(xToPx(0), yToPx(detMax));
+    ctx.stroke();
+
+    // parabola
+    ctx.strokeStyle = "rgba(255,204,102,0.70)";
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    for (let i=0;i<=240;i++){
+      const tr = -trMax + (2*trMax)*(i/240);
+      const det = (tr*tr)/4;
+      const px=xToPx(tr), py=yToPx(det);
+      if (i===0) ctx.moveTo(px,py); else ctx.lineTo(px,py);
+    }
+    ctx.stroke();
+
+    // labels
+    ctx.fillStyle = "rgba(232,236,255,0.65)";
+    ctx.font = `${11*(window.devicePixelRatio||1)}px ui-sans-serif`;
+    ctx.fillText("trace", xToPx(trMax)-40*(window.devicePixelRatio||1), yToPx(0)-6*(window.devicePixelRatio||1));
+    ctx.fillText("det", xToPx(0)+6*(window.devicePixelRatio||1), yToPx(detMax)+12*(window.devicePixelRatio||1));
+
+    ctx.fillStyle = "rgba(73,245,154,0.70)";
+    ctx.fillText("stable", xToPx(-trMax+0.4), yToPx(detMax-0.5));
+    ctx.fillStyle = "rgba(255,107,139,0.70)";
+    ctx.fillText("unstable", xToPx(0.4), yToPx(detMax-0.5));
+    ctx.fillStyle = "rgba(255,107,139,0.70)";
+    ctx.fillText("saddle", xToPx(-1.0), yToPx(detMin+0.6));
+
+    // current point
+    const eig = eig2x2(state.A);
+    const tr = eig.tr, det = eig.det;
+    const px = xToPx(clamp(tr, -trMax, trMax));
+    const py = yToPx(clamp(det, detMin, detMax));
+
+    ctx.save();
+    ctx.fillStyle = "rgba(110,231,255,0.95)";
+    ctx.beginPath(); ctx.arc(px,py,5.5*(window.devicePixelRatio||1),0,Math.PI*2); ctx.fill();
+    ctx.strokeStyle = "rgba(0,0,0,0.35)";
+    ctx.lineWidth = 2;
+    ctx.beginPath(); ctx.arc(px,py,5.5*(window.devicePixelRatio||1),0,Math.PI*2); ctx.stroke();
+    ctx.restore();
+
+    tdCanvas._map = { trMax, detMin, detMax, pad, plotW, plotH, xToPx, yToPx };
+  }
+
+  // ---------- Analysis panel (includes dominant mode readout) ----------
+  function updateAnalysisPanel(){
+    const eig = eig2x2(state.A);
+    traceVal.textContent = fmt(eig.tr);
+    detVal.textContent = fmt(eig.det);
+    discVal.textContent = fmt(eig.disc);
+
+    eig1El.textContent = cfmt(eig.l1.re, eig.l1.im);
+    eig2El.textContent = cfmt(eig.l2.re, eig.l2.im);
+
+    const cls = classify(eig.tr, eig.det, eig.disc);
+    classText.textContent = cls.name;
+    classDot.style.background = cls.color;
+
+    if (eig.evecs.length > 0){
+      const v1 = eig.evecs[0], v2 = eig.evecs[1];
+      eigvecRow.innerHTML = `<span>eigenvectors</span> <b class="mono right">v₁≈[${fmt(v1[0])}, ${fmt(v1[1])}] • v₂≈[${fmt(v2[0])}, ${fmt(v2[1])}]</b>`;
+    } else {
+      eigvecRow.innerHTML = `<span>eigenvectors</span> <b class="mono right">(complex: no real eigenlines)</b>`;
+    }
+
+    // Dominant behavior summary
+    let summary = "";
+    if (Math.abs(eig.l1.im) > 1e-8){
+      const alpha = eig.l1.re;          // real part
+      const omega = Math.abs(eig.l1.im);
+      const period = (omega > 1e-8) ? (2*Math.PI/omega) : Infinity;
+      if (Math.abs(alpha) < 1e-8){
+        summary = `oscillatory: period ≈ ${fmt(period)} (no decay)`;
+      } else if (alpha < 0){
+        const half = Math.log(2)/Math.abs(alpha);
+        summary = `spiral in: half-life ≈ ${fmt(half)}, period ≈ ${fmt(period)}`;
+      } else {
+        const dbl = Math.log(2)/Math.abs(alpha);
+        summary = `spiral out: doubling time ≈ ${fmt(dbl)}, period ≈ ${fmt(period)}`;
+      }
+    } else {
+      // real eigenvalues
+      const lam = [eig.l1.re, eig.l2.re].filter(v => isFinite(v));
+      const absLam = lam.map(v => Math.abs(v));
+      const slowIdx = absLam[0] <= absLam[1] ? 0 : 1;
+      const fastIdx = 1 - slowIdx;
+      const slow = lam[slowIdx], fast = lam[fastIdx];
+      const tauSlow = (Math.abs(slow) > 1e-8) ? (1/Math.abs(slow)) : Infinity;
+      const tauFast = (Math.abs(fast) > 1e-8) ? (1/Math.abs(fast)) : Infinity;
+      summary = `real modes: τ_slow≈${fmt(tauSlow)}, τ_fast≈${fmt(tauFast)}`;
+    }
+    modeRow.innerHTML = `<span>dominant behavior</span> <b class="mono right">${summary}</b>`;
+
+    // time slider bounds based on selected trajectory end
+    const sel = getSelected();
+    const tmax = sel ? Math.max(0.001, sel.tmax) : 1;
+    timeSlider.max = tmax;
+    timeSlider.value = clamp(Number(timeSlider.value), 0, tmax);
+    state.t = Number(timeSlider.value);
+    tReadout.textContent = `t = ${state.t.toFixed(2)}`;
+
+    speedVal.textContent = `${state.speed.toFixed(1)}×`;
+
+    updatePresetActive();
+    renderTraceDet();
+    updateTrajCount();
+  }
+
+  // ---------- Presets ----------
+  const PRESETS = [
+    { key:"center", name:"Center", desc:"3 trajectories (concentric closed orbits)", A:[[0,-1],[1,0]] },
+    { key:"stable_focus", name:"Stable focus", desc:"3 trajectories (spiral in)", A:[[-0.3,-1],[1,-0.3]] },
+    { key:"unstable_focus", name:"Unstable focus", desc:"3 trajectories (spiral out)", A:[[0.3,-1],[1,0.3]] },
+    { key:"stable_node", name:"Stable node", desc:"2 per quadrant + 1 per axis", A:[[-1,0],[0,-2]] },
+    { key:"unstable_node", name:"Unstable node", desc:"2 per quadrant + 1 per axis", A:[[1,0],[0,2]] },
+    { key:"saddle", name:"Saddle", desc:"2 per region (between separatrices)", A:[[1,0],[0,-1]] },
+    { key:"degenerate", name:"Degenerate", desc:"3 trajectories (defective / repeated)", A:[[-1,1],[0,-1]] },
+    { key:"skewed", name:"Skewed", desc:"3 trajectories (tilted portrait)", A:[[-1,2],[-0.5,-0.2]] }
+  ];
+
+  function buildPresetList(){
+    presetListEl.innerHTML = "";
+    PRESETS.forEach(p => {
+      const btn = document.createElement("button");
+      btn.className = "presetBtn";
+      btn.dataset.key = p.key;
+      btn.innerHTML = `<div class="name">${p.name}</div><div class="desc">${p.desc}</div>`;
+      btn.addEventListener("click", () => {
+        state.lastPresetKey = p.key;
+        setA(p.A[0][0],p.A[0][1],p.A[1][0],p.A[1][1]);
+        syncControlsFromA();
+        updateAnalysisPanel();
+        seedExample(p.key);
+      });
+      presetListEl.appendChild(btn);
+    });
+  }
+
+  function updatePresetActive(){
+    const a11=state.A[0][0], a12=state.A[0][1], a21=state.A[1][0], a22=state.A[1][1];
+    document.querySelectorAll(".presetBtn").forEach(btn => {
+      const p = PRESETS.find(x => x.key === btn.dataset.key);
+      const A = p.A;
+      const active = (A[0][0]===a11 && A[0][1]===a12 && A[1][0]===a21 && A[1][1]===a22);
+      btn.classList.toggle("active", active);
+    });
+  }
+
+  // ---------- Selection by clicking near a curve ----------
+  function closestTrajectoryToPoint(worldX, worldY){
+    if (state.traj.length === 0) return null;
+    let best = null;
+    let bestDist = Infinity;
+
+    // sample a subset of points for speed
+    for (const tr of state.traj){
+      const step = 12; // sampling stride
+      for (let i=0;i<tr.forward.length;i+=step){
+        const p = tr.forward[i];
+        if (!p) break;
+        const d = (p[0]-worldX)**2 + (p[1]-worldY)**2;
+        if (d < bestDist){
+          bestDist = d; best = tr;
+        }
+      }
+      for (let i=0;i<tr.back.length;i+=step){
+        const p = tr.back[i];
+        if (!p) break;
+        const d = (p[0]-worldX)**2 + (p[1]-worldY)**2;
+        if (d < bestDist){
+          bestDist = d; best = tr;
+        }
+      }
+    }
+
+    // only select if reasonably close
+    const thresh = (state.view.range * 0.20) ** 2;
+    if (bestDist <= thresh) return best;
+    return null;
+  }
+
+  // ---------- Event handlers ----------
+  function onMatrixEdited(){
+    const a11=Number(inputs.a11.value), a12=Number(inputs.a12.value), a21=Number(inputs.a21.value), a22=Number(inputs.a22.value);
+    if ([a11,a12,a21,a22].some(v => !isFinite(v))) return;
+    setA(a11,a12,a21,a22);
+    sliders.s11.value=a11; sliders.s12.value=a12; sliders.s21.value=a21; sliders.s22.value=a22;
+    updateAnalysisPanel();
+    recomputeAllTrajectories();
+  }
+  function onSliderMoved(){
+    const a11=Number(sliders.s11.value), a12=Number(sliders.s12.value), a21=Number(sliders.s21.value), a22=Number(sliders.s22.value);
+    setA(a11,a12,a21,a22);
+    inputs.a11.value=a11; inputs.a12.value=a12; inputs.a21.value=a21; inputs.a22.value=a22;
+    updateAnalysisPanel();
+    recomputeAllTrajectories();
+  }
+  for (const k in inputs){ inputs[k].addEventListener("input", onMatrixEdited); }
+  for (const k in sliders){ sliders[k].addEventListener("input", onSliderMoved); }
+
+  speedSlider.addEventListener("input", () => {
+    state.speed = Number(speedSlider.value);
+    speedVal.textContent = `${state.speed.toFixed(1)}×`;
+  });
+
+  // time slider: pause while dragging
+  timeSlider.addEventListener("pointerdown", () => {
+    state.isDraggingTime = true;
+    state.playing = false;
+    playBtn.textContent = "Play";
+  });
+  window.addEventListener("pointerup", () => { state.isDraggingTime = false; });
+
+  timeSlider.addEventListener("input", () => {
+    state.t = Number(timeSlider.value);
+    tReadout.textContent = `t = ${state.t.toFixed(2)}`;
+    state.playing = false;
+    playBtn.textContent = "Play";
+    renderTimeSeries();
+  });
+
+  playBtn.onclick = () => {
+    const sel = getSelected();
+    if (!sel) return;
+    if (!state.playing && state.t >= sel.tmax - 1e-6){
+      state.t = 0;
+      timeSlider.value = 0;
+      tReadout.textContent = `t = ${state.t.toFixed(2)}`;
+    }
+    state.playing = !state.playing;
+    playBtn.textContent = state.playing ? "Pause" : "Play";
+  };
+
+  rewindBtn.onclick = () => {
+    state.t = 0;
+    timeSlider.value = 0;
+    tReadout.textContent = `t = ${state.t.toFixed(2)}`;
+    state.playing = false;
+    playBtn.textContent = "Play";
+    renderTimeSeries();
+  };
+
+  // click: select if near a curve; otherwise add new
+  phaseCanvas.addEventListener("pointerdown", (e) => {
+    const rect = phaseCanvas.getBoundingClientRect();
+    const dpr = window.devicePixelRatio || 1;
+    const px = (e.clientX - rect.left) * dpr;
+    const py = (e.clientY - rect.top) * dpr;
+    const [x,y] = canvasToWorld(px,py,phaseCanvas);
+
+    const closest = closestTrajectoryToPoint(x,y);
+    if (closest){
+      state.selectedId = closest.id;
+      state.t = 0;
+      timeSlider.value = 0;
+      updateAnalysisPanel();
+      renderTimeSeries();
+      return;
+    }
+    addTrajectory([x,y]);
+  });
+
+  // double click empty area clears
+  phaseCanvas.addEventListener("dblclick", (e) => {
+    const rect = phaseCanvas.getBoundingClientRect();
+    const dpr = window.devicePixelRatio || 1;
+    const px = (e.clientX - rect.left) * dpr;
+    const py = (e.clientY - rect.top) * dpr;
+    const [x,y] = canvasToWorld(px,py,phaseCanvas);
+    const closest = closestTrajectoryToPoint(x,y);
+    if (!closest) clearTrajectories();
+  });
+
+  // trace-det click with snapping near boundaries, then auto-seed by the *classification* counts.
+  tdCanvas.addEventListener("pointerdown", (e) => {
+    const map = tdCanvas._map;
+    if (!map) return;
+    const rect = tdCanvas.getBoundingClientRect();
+    const dpr = window.devicePixelRatio || 1;
+    const px = (e.clientX - rect.left) * dpr;
+    const py = (e.clientY - rect.top) * dpr;
+
+    const {pad, plotW, plotH, trMax, detMin, detMax} = map;
+    const x01 = clamp((px - pad)/plotW, 0, 1);
+    const y01 = clamp((py - pad)/plotH, 0, 1);
+
+    let tr = (x01*2 - 1) * trMax;
+    let det = detMax - y01*(detMax - detMin);
+
+    // snap thresholds (in tr/det units)
+    const snapTr = 0.25;
+    const snapDet = 0.25;
+
+    // snap to trace=0
+    if (Math.abs(tr) < snapTr) tr = 0;
+
+    // snap to det=0
+    if (Math.abs(det) < snapDet) det = 0;
+
+    // snap to parabola det=tr^2/4 (node/focus boundary) if close and det>0
+    const parab = (tr*tr)/4;
+    if (det > 0 && Math.abs(det - parab) < 0.45) det = parab;
+
+    // Construct a matrix with desired (tr, det): A=[[a,1],[c,a]], a=tr/2, c=a^2 - det
+    const a = tr/2;
+    const b = 1;
+    const c = a*a - det;
+    const d = a;
+
+    setA(a,b,c,d);
+    syncControlsFromA();
+    updateAnalysisPanel();
+
+    // seed based on classification (closest "example type")
+    const eig = eig2x2(state.A);
+    const cls = classify(eig.tr, eig.det, eig.disc);
+    const key = cls.key; // center / stable_focus / unstable_focus / stable_node / unstable_node / saddle / degenerate
+    seedExample(key);
+  });
+
+  window.addEventListener("keydown", (e) => {
+    if (e.code === "Space"){
+      e.preventDefault();
+      playBtn.click();
+    } else if (e.key.toLowerCase() === "c"){
+      clearTrajectories();
+    } else if (e.code === "Backspace"){
+      e.preventDefault();
+      undoTrajectory();
+    }
+  });
+
+  // Resize observers
+  const ro = new ResizeObserver(() => {
+    renderPhase();
+    renderTimeSeries();
+    renderTraceDet();
+  });
+  ro.observe(phaseHolder);
+  ro.observe(tsCanvas.parentElement);
+  ro.observe(tdCanvas.parentElement);
+
+  // ---------- Animation loop ----------
+  let last = performance.now();
+  function tick(now){
+    const dtms = now - last;
+    last = now;
+
+    const sel = getSelected();
+    if (state.playing && sel && !state.isDraggingTime){
+      state.t += (dtms/1000) * state.speed;
+      if (state.t >= sel.tmax){
+        state.t = sel.tmax;
+        state.playing = false;
+        playBtn.textContent = "Play";
+      }
+      timeSlider.value = state.t;
+      tReadout.textContent = `t = ${state.t.toFixed(2)}`;
+    }
+
+    renderPhase();
+    renderTimeSeries();
+    requestAnimationFrame(tick);
+  }
+
+  // ---------- Init ----------
+  buildPresetList();
+  syncControlsFromA();
+  state.speed = Number(speedSlider.value);
+  updateAnalysisPanel();
+  requestAnimationFrame(tick);
+
+  // Start in the Center example (auto-seeded)
+  seedExample("center");
+})();
+</script>
+</body>
+</html>
