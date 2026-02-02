@@ -20,14 +20,16 @@
 <meta name="twitter:title" content="Phase Portraits — Interactive Guide to Planar Systems"/>
 <meta name="twitter:description" content="Interactive visualization tool for 2×2 linear ODE phase portraits. Built for ODE courses."/>
 <!-- Structured Data -->
+<meta name="robots" content="index, follow"/>
 <script type="application/ld+json">{
   "@context":"https://schema.org","@type":"WebApplication",
   "name":"Phase Portraits — Interactive Guide to Planar Systems",
-  "description":"Interactive educational tool for visualizing phase portraits of 2×2 linear ODE systems.",
+  "description":"Interactive educational tool for visualizing phase portraits of 2×2 linear ODE systems. Explore nodes, saddles, foci, and centers with real-time simulations.",
   "url":"https://ayman-alashkar.github.io/phase_portrait/",
   "applicationCategory":"EducationalApplication",
-  "author":{"@type":"Person","name":"Ayman Alashkar","affiliation":{"@type":"Organization","name":"Okinawa Institute of Science and Technology (OIST)"}},
-  "educationalLevel":"University","inLanguage":"en"
+  "author":{"@type":"Person","name":"Ayman Alashkar","email":"a.alashkar@oist.jp","affiliation":{"@type":"Organization","name":"Okinawa Institute of Science and Technology (OIST)","url":"https://www.oist.jp"}},
+  "educationalLevel":"University","inLanguage":"en",
+  "keywords":"phase portrait, ODE, dynamical systems, eigenvalues, linear systems, planar systems, interactive visualization"
 }</script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,500;0,9..144,700;1,9..144,400&family=Outfit:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
@@ -55,7 +57,7 @@ body{
   border-bottom:1px solid var(--border);
 }
 .topbar-inner{
-  max-width:1440px;margin:0 auto;padding:0 20px;
+  max-width:1680px;margin:0 auto;padding:0 20px;
   display:flex;align-items:center;justify-content:space-between;height:52px;
 }
 .brand{display:flex;align-items:center;gap:10px;}
@@ -70,7 +72,7 @@ body{
 @media(max-width:600px){.brand-sub{display:none;}}
 /* ===== TABS ===== */
 .tab-strip{
-  max-width:1440px;margin:0 auto;padding:0 20px;
+  max-width:1680px;margin:0 auto;padding:0 20px;
   display:flex;gap:2px;overflow-x:auto;scrollbar-width:none;
 }
 .tab-strip::-webkit-scrollbar{display:none;}
@@ -92,12 +94,13 @@ body{
 @keyframes fadeUp{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:translateY(0);}}
 /* ===== LAYOUT ===== */
 .split{
-  max-width:1440px;margin:0 auto;padding:16px 20px 40px;
-  display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:20px;
+  max-width:1680px;margin:0 auto;padding:16px 20px 40px;
+  display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.3fr);gap:24px;
   align-items:start;
 }
+@media(min-width:1600px){.split{grid-template-columns:minmax(0,1fr) minmax(0,1.5fr);gap:32px;}}
 @media(max-width:1024px){.split{grid-template-columns:1fr;gap:16px;padding:12px 14px 40px;}}
-.full-page{max-width:800px;margin:0 auto;padding:24px 20px 60px;}
+.full-page{max-width:900px;margin:0 auto;padding:24px 20px 60px;}
 /* ===== THEORY SIDE ===== */
 .theory{display:flex;flex-direction:column;gap:0;}
 .theory h2{font-family:'Fraunces',serif;font-size:1.6rem;font-weight:500;letter-spacing:-.03em;margin-bottom:12px;line-height:1.25;}
@@ -253,6 +256,8 @@ input[type="number"]:focus{border-color:var(--blue);box-shadow:0 0 0 3px var(--g
     <span>© 2026 <strong>Ayman Alashkar</strong></span>
     <span class="footer-dot">·</span>
     <a href="https://www.oist.jp" target="_blank" rel="noopener">Okinawa Institute of Science and Technology (OIST)</a>
+    <span class="footer-dot">·</span>
+    <a href="mailto:a.alashkar@oist.jp">a.alashkar@oist.jp</a>
   </div>
 </footer>
 
@@ -545,7 +550,7 @@ builders.case1=()=>{
     <div class="pills" id="c1pills"></div>
     <div class="card">
       <div class="card-head"><span>Phase Portrait</span><span class="badge" id="c1cls"></span></div>
-      <canvas id="c1c" style="height:300px;"></canvas>
+      <canvas id="c1c" style="height:clamp(280px, 36vh, 440px);"></canvas>
       <div class="ctrl-bar">
         <div class="ctrl"><label>α</label><input type="range" id="c1a" min="-3" max="3" step=".1" value="1"/><span class="v" id="c1av">1</span></div>
         <div class="ctrl"><label>β</label><input type="range" id="c1b" min="-3" max="3" step=".1" value=".5"/><span class="v" id="c1bv">.5</span></div>
@@ -557,7 +562,7 @@ builders.case1=()=>{
     </div>
     <div class="card">
       <div class="card-head"><span>Time Series</span>${TS_LEGEND}</div>
-      <canvas id="c1t" style="height:100px;"></canvas>
+      <canvas id="c1t" style="height:clamp(90px, 12vh, 150px);"></canvas>
       <div class="time-bar"><input type="range" id="c1tm" min="0" max="1" step=".001" value="0"/></div>
     </div>
   </div></div>`;
@@ -595,7 +600,7 @@ builders.case2=()=>{
   <div class="viz">
     <div class="card">
       <div class="card-head"><span>Phase Portrait</span><span class="badge" id="c2cls"></span></div>
-      <canvas id="c2c" style="height:300px;"></canvas>
+      <canvas id="c2c" style="height:clamp(280px, 36vh, 440px);"></canvas>
       <div class="ctrl-bar">
         <div class="ctrl"><label>α</label><input type="range" id="c2a" min="-3" max="3" step=".1" value="-1"/><span class="v" id="c2av">-1</span></div>
       </div>
@@ -604,7 +609,7 @@ builders.case2=()=>{
     </div>
     <div class="card">
       <div class="card-head"><span>Time Series</span>${TS_LEGEND}</div>
-      <canvas id="c2t" style="height:100px;"></canvas>
+      <canvas id="c2t" style="height:clamp(90px, 12vh, 150px);"></canvas>
       <div class="time-bar"><input type="range" id="c2tm" min="0" max="1" step=".001" value="0"/></div>
     </div>
   </div></div>`;
@@ -641,7 +646,7 @@ builders.case3=()=>{
     <div class="pills" id="c3pills"></div>
     <div class="card">
       <div class="card-head"><span>Phase Portrait</span><span class="badge" id="c3cls"></span></div>
-      <canvas id="c3c" style="height:300px;"></canvas>
+      <canvas id="c3c" style="height:clamp(280px, 36vh, 440px);"></canvas>
       <div class="ctrl-bar">
         <div class="ctrl"><label>α</label><input type="range" id="c3a" min="-2" max="2" step=".05" value="0"/><span class="v" id="c3av">0</span></div>
         <div class="ctrl"><label>β</label><input type="range" id="c3b" min="-3" max="3" step=".1" value="1"/><span class="v" id="c3bv">1</span></div>
@@ -651,7 +656,7 @@ builders.case3=()=>{
     </div>
     <div class="card">
       <div class="card-head"><span>Time Series</span>${TS_LEGEND}</div>
-      <canvas id="c3t" style="height:100px;"></canvas>
+      <canvas id="c3t" style="height:clamp(90px, 12vh, 150px);"></canvas>
       <div class="time-bar"><input type="range" id="c3tm" min="0" max="1" step=".001" value="0"/></div>
     </div>
   </div></div>`;
@@ -704,13 +709,13 @@ builders.examples=()=>{
   <div class="viz">
     <div class="card">
       <div class="card-head"><span>Phase Portrait</span><span class="badge" id="excls"></span></div>
-      <canvas id="exc" style="height:340px;"></canvas>
+      <canvas id="exc" style="height:clamp(300px, 40vh, 480px);"></canvas>
       <div class="ctrl-bar"><button class="btn btn-primary" id="exp">▶ Play</button><button class="btn" id="exr">⟲</button>
         <div class="ctrl"><label>Speed</label><input type="range" id="exsp" min=".1" max="2" step=".1" value=".8"/></div></div>
     </div>
     <div class="card">
       <div class="card-head"><span>Time Series</span>${TS_LEGEND}</div>
-      <canvas id="ext" style="height:100px;"></canvas>
+      <canvas id="ext" style="height:clamp(90px, 12vh, 150px);"></canvas>
       <div class="time-bar"><input type="range" id="extm" min="0" max="1" step=".001" value="0"/></div>
     </div>
   </div></div>`;
@@ -759,12 +764,14 @@ builders.explorer=()=>{
     <h3 style="margin-top:14px;">Presets</h3>
     <div class="pills" id="fpills"></div>
     <div class="callout callout-blue" id="finsight" style="margin-top:10px;"></div>
-    <div style="margin-top:12px;"><canvas id="ftd" style="width:100%;height:180px;border-radius:var(--radius);border:1px solid var(--border);"></canvas></div>
+    <h3 style="margin-top:16px;">Trace–Determinant Classification Map</h3>
+    <p style="font-size:.82rem;color:var(--txt2);margin-bottom:8px;">Every 2×2 matrix maps to a point (tr&thinsp;A, det&thinsp;A). The <strong>parabola</strong> Δ = tr² − 4·det = 0 separates real eigenvalues (below) from complex (above). <strong>det &lt; 0</strong> → saddle. The blue dot shows your current matrix.</p>
+    <div style="margin-top:8px;"><canvas id="ftd" style="width:100%;height:clamp(200px, 22vh, 320px);border-radius:var(--radius);border:1px solid var(--border);"></canvas></div>
   </div>
   <div class="viz">
     <div class="card">
       <div class="card-head"><span>Phase Portrait</span><span class="badge" id="fcls"></span></div>
-      <canvas id="fc" style="height:360px;"></canvas>
+      <canvas id="fc" style="height:clamp(300px, 42vh, 520px);"></canvas>
       <div class="ctrl-bar">
         <button class="btn btn-primary" id="fp">▶ Play</button><button class="btn" id="fr">⟲</button>
         <button class="btn btn-danger" id="fcl">Clear</button>
@@ -773,7 +780,7 @@ builders.explorer=()=>{
     </div>
     <div class="card">
       <div class="card-head"><span>Time Series</span>${TS_LEGEND}</div>
-      <canvas id="ft" style="height:110px;"></canvas>
+      <canvas id="ft" style="height:clamp(100px, 14vh, 160px);"></canvas>
       <div class="time-bar"><input type="range" id="ftm" min="0" max="1" step=".001" value="0"/></div>
     </div>
   </div></div>`;
@@ -819,21 +826,80 @@ builders.explorer=()=>{
     c.width=Math.floor(r.width*d);c.height=Math.floor(r.height*d);
     const ctx=c.getContext("2d"),w=c.width,h=c.height;
     ctx.fillStyle="#0c0f1a";ctx.fillRect(0,0,w,h);
-    const pad=14*d,pw=w-2*pad,ph=h-2*pad,tm=7,dm=-7,dx=12;
-    const xP=t=>pad+((t+tm)/(2*tm))*pw,yP=det=>pad+(1-(det-dm)/(dx-dm))*ph;
-    ctx.fillStyle="rgba(248,113,113,.06)";ctx.fillRect(pad,yP(0),pw,yP(dm)-yP(0));
-    function fR(s,a,cl){ctx.save();ctx.fillStyle=cl;ctx.beginPath();const ts=s<0?-tm:0,te=s<0?0:tm;
-      if(a){for(let i=0;i<=200;i++){const t=ts+(te-ts)*(i/200),px=xP(t),py=yP((t*t)/4);i===0?ctx.moveTo(px,py):ctx.lineTo(px,py);}ctx.lineTo(xP(te),yP(dx));ctx.lineTo(xP(ts),yP(dx));}
-      else{ctx.moveTo(xP(ts),yP(0));ctx.lineTo(xP(te),yP(0));for(let i=200;i>=0;i--){const t=ts+(te-ts)*(i/200);ctx.lineTo(xP(t),yP((t*t)/4));}}
-      ctx.closePath();ctx.fill();ctx.restore();}
-    fR(-1,0,"rgba(52,211,153,.08)");fR(-1,1,"rgba(52,211,153,.04)");fR(1,0,"rgba(248,113,113,.08)");fR(1,1,"rgba(248,113,113,.04)");
-    ctx.strokeStyle="rgba(255,255,255,.1)";ctx.lineWidth=1;ctx.beginPath();
-    ctx.moveTo(xP(-tm),yP(0));ctx.lineTo(xP(tm),yP(0));ctx.moveTo(xP(0),yP(dm));ctx.lineTo(xP(0),yP(dx));ctx.stroke();
-    ctx.strokeStyle="rgba(251,191,36,.4)";ctx.lineWidth=1.5;ctx.beginPath();
-    for(let i=0;i<=200;i++){const t=-tm+(2*tm)*(i/200);const px=xP(t),py=yP((t*t)/4);i===0?ctx.moveTo(px,py):ctx.lineTo(px,py);}ctx.stroke();
-    const eig=eig2x2(E.S.A),px=xP(clamp(eig.tr,-tm,tm)),py=yP(clamp(eig.det,dm,dx));
-    ctx.fillStyle="#4d8eff";ctx.beginPath();ctx.arc(px,py,4.5*d,0,Math.PI*2);ctx.fill();
-    ctx.strokeStyle="rgba(255,255,255,.25)";ctx.lineWidth=1.5;ctx.stroke();
+    // Padding for axis labels
+    const padL=42*d,padR=14*d,padT=14*d,padB=28*d;
+    const pw=w-padL-padR,ph=h-padT-padB;
+    const trMax=7,detMin=-7,detMax=12;
+    const xP=t=>padL+((t+trMax)/(2*trMax))*pw;
+    const yP=det=>padT+(1-(det-detMin)/(detMax-detMin))*ph;
+    // Region fills — saddle below det=0
+    ctx.fillStyle="rgba(248,113,113,.06)";
+    ctx.fillRect(padL,yP(0),pw,yP(detMin)-yP(0));
+    // Stable/unstable node & focus regions
+    function fillRegion(sideSign,aboveParabola,color){
+      ctx.save();ctx.fillStyle=color;ctx.beginPath();
+      const ts=sideSign<0?-trMax:0,te=sideSign<0?0:trMax;
+      if(aboveParabola){
+        for(let i=0;i<=200;i++){const t=ts+(te-ts)*(i/200),px=xP(t),py=yP((t*t)/4);i===0?ctx.moveTo(px,py):ctx.lineTo(px,py);}
+        ctx.lineTo(xP(te),yP(detMax));ctx.lineTo(xP(ts),yP(detMax));
+      }else{
+        ctx.moveTo(xP(ts),yP(0));ctx.lineTo(xP(te),yP(0));
+        for(let i=200;i>=0;i--){const t=ts+(te-ts)*(i/200);ctx.lineTo(xP(t),yP((t*t)/4));}
+      }
+      ctx.closePath();ctx.fill();ctx.restore();
+    }
+    fillRegion(-1,0,"rgba(52,211,153,.08)");  // stable node
+    fillRegion(-1,1,"rgba(52,211,153,.05)");  // stable focus
+    fillRegion(1,0,"rgba(248,113,113,.08)");  // unstable node
+    fillRegion(1,1,"rgba(248,113,113,.05)");  // unstable focus
+    // Axes
+    ctx.strokeStyle="rgba(255,255,255,.12)";ctx.lineWidth=1;ctx.beginPath();
+    ctx.moveTo(xP(-trMax),yP(0));ctx.lineTo(xP(trMax),yP(0));ctx.stroke();
+    ctx.beginPath();ctx.moveTo(xP(0),yP(detMin));ctx.lineTo(xP(0),yP(detMax));ctx.stroke();
+    // Tick marks
+    ctx.fillStyle="rgba(255,255,255,.3)";ctx.font=`${9*d}px Outfit`;ctx.textAlign="center";
+    for(let t=-6;t<=6;t+=2){if(t===0)continue;ctx.fillText(t.toString(),xP(t),yP(detMin)+14*d);}
+    ctx.textAlign="right";ctx.textBaseline="middle";
+    for(let det=-4;det<=10;det+=4){if(det===0)continue;ctx.fillText(det.toString(),padL-6*d,yP(det));}
+    // Axis labels
+    ctx.fillStyle="rgba(255,255,255,.45)";ctx.font=`600 ${10*d}px Outfit`;
+    ctx.textAlign="center";ctx.textBaseline="top";
+    ctx.fillText("tr(A)",xP(0),yP(detMin)+16*d);
+    ctx.save();ctx.translate(12*d,yP((detMax+detMin)/2));ctx.rotate(-Math.PI/2);
+    ctx.textAlign="center";ctx.textBaseline="middle";ctx.fillText("det(A)",0,0);ctx.restore();
+    // Parabola Δ=0
+    ctx.strokeStyle="rgba(251,191,36,.5)";ctx.lineWidth=1.5;ctx.beginPath();
+    for(let i=0;i<=200;i++){const t=-trMax+(2*trMax)*(i/200),px=xP(t),py=yP((t*t)/4);
+      i===0?ctx.moveTo(px,py):ctx.lineTo(px,py);}ctx.stroke();
+    // Parabola label
+    ctx.save();ctx.fillStyle="rgba(251,191,36,.6)";ctx.font=`500 ${9*d}px 'JetBrains Mono',monospace`;
+    ctx.textAlign="left";ctx.fillText("Δ = 0",xP(3.8),yP(3.8*3.8/4)-6*d);ctx.restore();
+    // Region labels
+    ctx.font=`600 ${9.5*d}px Outfit`;ctx.textAlign="center";ctx.textBaseline="middle";
+    ctx.fillStyle="rgba(52,211,153,.45)";
+    ctx.fillText("Stable Node",xP(-3.5),yP(2));
+    ctx.fillText("Stable Focus",xP(-3),yP(7));
+    ctx.fillStyle="rgba(248,113,113,.45)";
+    ctx.fillText("Unstable Node",xP(3.5),yP(2));
+    ctx.fillText("Unstable Focus",xP(3),yP(7));
+    ctx.fillStyle="rgba(248,113,113,.3)";
+    ctx.fillText("Saddle",xP(0),yP(-3.5));
+    // Center label on the det axis (tr=0, above parabola)
+    ctx.fillStyle="rgba(251,191,36,.45)";ctx.font=`600 ${8.5*d}px Outfit`;
+    ctx.fillText("Centers",xP(0),yP(6));
+    // det=0 line label
+    ctx.fillStyle="rgba(255,255,255,.2)";ctx.font=`${8*d}px Outfit`;
+    ctx.fillText("det = 0",xP(5.5),yP(0)-6*d);
+    // Current matrix dot
+    const eig=eig2x2(E.S.A);
+    const dotX=xP(clamp(eig.tr,-trMax,trMax)),dotY=yP(clamp(eig.det,detMin,detMax));
+    // Glow
+    ctx.save();const grd=ctx.createRadialGradient(dotX,dotY,0,dotX,dotY,14*d);
+    grd.addColorStop(0,"rgba(77,142,255,.3)");grd.addColorStop(1,"transparent");
+    ctx.fillStyle=grd;ctx.beginPath();ctx.arc(dotX,dotY,14*d,0,Math.PI*2);ctx.fill();ctx.restore();
+    // Dot
+    ctx.fillStyle="#4d8eff";ctx.beginPath();ctx.arc(dotX,dotY,5*d,0,Math.PI*2);ctx.fill();
+    ctx.strokeStyle="rgba(255,255,255,.4)";ctx.lineWidth=1.5;ctx.stroke();
   }
   for(const k in ins)ins[k].addEventListener("input",()=>{sls["s"+k.slice(1)].value=ins[k].value;upd(true);});
   for(const k in sls)sls[k].addEventListener("input",()=>{ins["a"+k.slice(1)].value=sls[k].value;upd(true);});
