@@ -1,7 +1,6 @@
 <!doctype html>
 <html lang="en">
 <head>
-<meta name="google-site-verification" content="glyKJIseQKrAyRGFmMvT2QOkj7hk-r4VZHN5Ymvuvlc" />
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1"/>
 <title>Phase Portraits — Interactive Guide to Planar Systems</title>
@@ -250,7 +249,55 @@ input[type="number"]:focus{border-color:var(--blue);box-shadow:0 0 0 3px var(--g
   <div class="tab-strip" id="tabBar"></div>
 </div>
 
-<main id="tabContainer" style="flex:1;"></main>
+<main id="tabContainer" style="flex:1;">
+<!-- Pre-rendered Overview for SEO — JS will manage tabs dynamically -->
+<div id="tab-overview" class="tab-pane active">
+  <div class="full-page">
+    <h2 style="font-family:'Fraunces',serif;font-size:2rem;font-weight:500;margin-bottom:6px;">What Is a Phase Portrait?</h2>
+    <p style="color:var(--txt2);font-size:.9rem;margin-bottom:20px;">A visual map showing how <em>all</em> solutions of a 2D system behave at once.</p>
+    <div class="math-block"><span class="tag">The System</span>
+      <strong>x</strong>′ = <strong>A</strong><strong>x</strong> &nbsp;⟹&nbsp; x(t) = e<sup>tA</sup>x₀</div>
+    <p>As time evolves, the point (x₁(t), x₂(t)) traces a curve in the plane. A <strong>phase portrait</strong> collects these curves for many initial conditions, revealing the qualitative dynamics at a glance.</p>
+    <div class="callout callout-blue"><span class="icon">💡</span> Every 2×2 matrix A is similar to one of three canonical forms. The <strong>eigenvalues</strong> determine the type. The <strong>eigenvectors</strong> determine the skew.</div>
+    <h3 style="font-family:'Fraunces',serif;font-size:1.2rem;color:var(--cyan);margin:24px 0 12px;">The Three Canonical Forms</h3>
+    <div class="subcase"><div class="subcase-title"><span class="badge-s badge-stable">CASE 1</span> Diagonalizable — real eigenvalues</div>
+      <div class="math-block">M = <span class="mtx"><span>α</span><span>0</span><span>0</span><span>β</span></span> → x₁ = c₁e<sup>αt</sup>, x₂ = c₂e<sup>βt</sup></div>
+      <p>→ <strong>Nodes</strong> (same sign) or <strong>Saddles</strong> (opposite sign)</p></div>
+    <div class="subcase"><div class="subcase-title"><span class="badge-s badge-neutral">CASE 2</span> Defective — repeated eigenvalue</div>
+      <div class="math-block">M = <span class="mtx"><span>α</span><span>1</span><span>0</span><span>α</span></span> → x₁ = (c₁+c₂t)e<sup>αt</sup>, x₂ = c₂e<sup>αt</sup></div>
+      <p>→ <strong>Improper nodes</strong> with fan-shaped trajectories</p></div>
+    <div class="subcase"><div class="subcase-title"><span class="badge-s badge-unstable">CASE 3</span> Complex conjugate eigenvalues α ± βi</div>
+      <div class="math-block">M = <span class="mtx"><span>α</span><span>−β</span><span>β</span><span>α</span></span> → x(t) = e<sup>αt</sup>(cos βt, sin βt)</div>
+      <p>→ <strong>Foci</strong> (spirals) or <strong>Centers</strong> (closed orbits)</p></div>
+    <h3 style="font-family:'Fraunces',serif;font-size:1.2rem;color:var(--cyan);margin:24px 0 12px;">Classification Summary</h3>
+    <table class="tbl"><tr><th>Eigenvalues</th><th>Portrait Type</th><th>Stability</th></tr>
+      <tr><td>λ₁, λ₂ real, same sign</td><td>Node</td><td>Stable if both &lt; 0</td></tr>
+      <tr><td>λ₁, λ₂ real, opposite</td><td>Saddle</td><td>Always unstable</td></tr>
+      <tr><td>λ repeated (defective)</td><td>Improper node</td><td>Stable if α &lt; 0</td></tr>
+      <tr><td>α ± βi, α ≠ 0</td><td>Focus (spiral)</td><td>Stable if α &lt; 0</td></tr>
+      <tr><td>± βi (pure imag.)</td><td>Center</td><td>Stable (not asymp.)</td></tr></table>
+    <div class="callout callout-purple"><span class="icon">🔑</span> <strong>Key insight:</strong> trace = λ₁+λ₂, det = λ₁λ₂, discriminant Δ = tr²−4det. These three numbers classify everything.</div>
+
+    <!-- SEO-only extended content: visible to crawlers, provides keyword-rich text -->
+    <section style="margin-top:32px;">
+      <h3 style="font-family:'Fraunces',serif;font-size:1.2rem;color:var(--cyan);margin:24px 0 12px;">About This Interactive Tool</h3>
+      <p>This interactive educational tool lets you explore phase portraits of 2×2 linear ordinary differential equation (ODE) systems of the form <strong>x′ = Ax</strong>. It covers all classification cases for planar linear systems: stable and unstable nodes, saddle points, star nodes, improper nodes (defective matrices), stable and unstable foci (spirals), and centers (pure imaginary eigenvalues producing closed orbits).</p>
+      <p>Each case includes step-by-step mathematical derivations, canonical forms, matrix exponentials, and real-time interactive simulations powered by 4th-order Runge-Kutta integration. Use the tabs above to navigate between the three canonical eigenvalue cases, worked textbook examples, and a free explorer where you can enter any 2×2 matrix and see its phase portrait, eigenvalue analysis, and trace-determinant classification diagram.</p>
+      <p>Topics covered: eigenvalues and eigenvectors of 2×2 matrices, diagonalization, Jordan normal form, matrix exponentials, stability analysis, trace-determinant plane, separatrices, power-law trajectory equations, and the role of the discriminant Δ = tr² − 4det in classifying equilibrium points of linear dynamical systems.</p>
+      <p>Built for ODE courses at the university level. Free, open-source, and runs entirely in the browser with no installation required.</p>
+    </section>
+  </div>
+</div>
+</main>
+
+<noscript>
+  <div style="max-width:800px;margin:40px auto;padding:20px;color:#e4e8f7;font-family:sans-serif;">
+    <h2>Phase Portraits — Interactive Guide to Planar Systems</h2>
+    <p>This interactive tool requires JavaScript to run the phase portrait simulations. Please enable JavaScript in your browser to use the interactive visualizations.</p>
+    <p>This tool covers phase portraits of 2×2 linear ODE systems x′ = Ax, including: stable and unstable nodes, saddle points, improper nodes, spiral foci, and centers. It features real-time RK4 integration, eigenvalue analysis, trace-determinant classification diagrams, and step-by-step worked examples.</p>
+    <p>Created by Ayman Alashkar at the Okinawa Institute of Science and Technology (OIST). Contact: a.alashkar@oist.jp</p>
+  </div>
+</noscript>
 
 <footer class="site-footer">
   <div class="footer-row">
@@ -457,7 +504,10 @@ function initTabs(){
       Object.values(engines).forEach(e=>e?.start());
     };
     bar.appendChild(b);
-    const d=document.createElement("div");d.id="tab-"+t.id;d.className="tab-pane"+(i===0?" active":"");cont.appendChild(d);
+    // Only create tab pane if not pre-rendered
+    if(!document.getElementById("tab-"+t.id)){
+      const d=document.createElement("div");d.id="tab-"+t.id;d.className="tab-pane";cont.appendChild(d);
+    }
   });
 }
 
@@ -910,7 +960,10 @@ builders.explorer=()=>{
 // ═══════════════════════════════════════════════
 // BOOT
 // ═══════════════════════════════════════════════
-initTabs();builders.overview();built.overview=true;builders.case1();built.case1=true;
+initTabs();
+// Overview is pre-rendered in HTML for SEO; mark as built, skip re-render
+built.overview=true;
+builders.case1();built.case1=true;
 </script>
 </body>
 </html>
