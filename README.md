@@ -14,17 +14,6 @@ An interactive educational tool for visualizing and understanding phase portrait
 
 Phase portraits reveal how **all** solutions of a 2D linear system behave at once. This tool pairs real-time simulations with step-by-step mathematical explanations, connecting the algebra (eigenvalues, eigenvectors, matrix exponentials) to the geometry you see on screen.
 
-### Features
-
-- **Six interactive tabs** covering the full theory of planar linear systems
-- **Real-time RK4 integration** with animated particle trajectories
-- **Click-to-add** trajectories on any phase plane
-- **Parameter sliders** for smooth exploration of how eigenvalues affect dynamics
-- **Time series** plots with synchronized playback
-- **Trace-determinant diagram** in the Explorer tab
-- **Step-by-step worked examples** from standard ODE textbooks
-- **Fully responsive** — works on desktops, laptops, and tablets
-- **Zero dependencies** — single HTML file, no build step, no frameworks
 
 ## Tabs
 
