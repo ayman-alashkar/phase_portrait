@@ -1,50 +1,50 @@
 <!doctype html>
 <html lang="en">
 <head>
-<meta charset="utf-8"/>
-<meta name="viewport" content="width=device-width,initial-scale=1"/>
-<title>Phase Portraits — Interactive Guide to Planar Systems</title>
-<!-- SEO -->
-<meta name="description" content="Interactive educational tool for visualizing phase portraits of 2×2 linear ODE systems. Explore nodes, saddles, foci, and centers with real-time simulations and step-by-step mathematical explanations."/>
-<meta name="keywords" content="phase portrait, ODE, dynamical systems, eigenvalues, eigenvectors, linear systems, differential equations, planar systems, stability, node, saddle, focus, center, interactive visualization, mathematics education"/>
-<meta name="author" content="Ayman Alashkar"/>
-<link rel="canonical" href="https://ayman-alashkar.github.io/phase_portrait/"/>
-<!-- Open Graph -->
-<meta property="og:title" content="Phase Portraits — Interactive Guide to Planar Systems"/>
-<meta property="og:description" content="Explore phase portraits of 2×2 linear ODE systems interactively. Visualize nodes, saddles, foci, and centers with real-time simulations."/>
-<meta property="og:url" content="https://ayman-alashkar.github.io/phase_portrait/"/>
-<meta property="og:type" content="website"/>
-<meta property="og:locale" content="en_US"/>
-<!-- Twitter Card -->
-<meta name="twitter:card" content="summary_large_image"/>
-<meta name="twitter:title" content="Phase Portraits — Interactive Guide to Planar Systems"/>
-<meta name="twitter:description" content="Interactive visualization tool for 2×2 linear ODE phase portraits. Built for ODE courses."/>
-<!-- Structured Data -->
-<meta name="robots" content="index, follow"/>
-<script type="application/ld+json">{
-  "@context":"https://schema.org","@type":"WebApplication",
-  "name":"Phase Portraits — Interactive Guide to Planar Systems",
-  "description":"Interactive educational tool for visualizing phase portraits of 2×2 linear ODE systems. Explore nodes, saddles, foci, and centers with real-time simulations.",
-  "url":"https://ayman-alashkar.github.io/phase_portrait/",
-  "applicationCategory":"EducationalApplication",
-  "author":{"@type":"Person","name":"Ayman Alashkar","email":"a.alashkar@oist.jp","affiliation":{"@type":"Organization","name":"Okinawa Institute of Science and Technology (OIST)","url":"https://www.oist.jp"}},
-  "educationalLevel":"University","inLanguage":"en",
-  "keywords":"phase portrait, ODE, dynamical systems, eigenvalues, linear systems, planar systems, interactive visualization"
-}</script>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,500;0,9..144,700;1,9..144,400&family=Outfit:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
-<style>
-:root{
-  --bg:#0c0f1a;--surface:#141827;--card:#1a1f33;--card2:#1f2540;
-  --border:rgba(255,255,255,.06);--border2:rgba(255,255,255,.1);
-  --txt:#e4e8f7;--txt2:#a0a8c8;--txt3:#6b7394;
-  --blue:#4d8eff;--cyan:#22d3ee;--purple:#a78bfa;--green:#34d399;
-  --red:#f87171;--amber:#fbbf24;--pink:#f472b6;
-  --glow:rgba(77,142,255,.15);
-  --radius:12px;--radius2:16px;
-}
-*{box-sizing:border-box;margin:0;padding:0;}
-html{scroll-behavior:smooth;}
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width,initial-scale=1"/>
+    <title>Phase Portraits — Interactive Guide to Planar Systems</title>
+    <!-- SEO -->
+    <meta name="description" content="Interactive educational tool for visualizing phase portraits of 2×2 linear ODE systems. Explore nodes, saddles, foci, and centers with real-time simulations and step-by-step mathematical explanations."/>
+    <meta name="keywords" content="phase portrait, ODE, dynamical systems, eigenvalues, eigenvectors, linear systems, differential equations, planar systems, stability, node, saddle, focus, center, interactive visualization, mathematics education"/>
+    <meta name="author" content="Ayman Alashkar"/>
+    <link rel="canonical" href="https://ayman-alashkar.github.io/phase_portrait/"/>
+    <!-- Open Graph -->
+    <meta property="og:title" content="Phase Portraits — Interactive Guide to Planar Systems"/>
+    <meta property="og:description" content="Explore phase portraits of 2×2 linear ODE systems interactively. Visualize nodes, saddles, foci, and centers with real-time simulations."/>
+    <meta property="og:url" content="https://ayman-alashkar.github.io/phase_portrait/"/>
+    <meta property="og:type" content="website"/>
+    <meta property="og:locale" content="en_US"/>
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image"/>
+    <meta name="twitter:title" content="Phase Portraits — Interactive Guide to Planar Systems"/>
+    <meta name="twitter:description" content="Interactive visualization tool for 2×2 linear ODE phase portraits. Built for ODE courses."/>
+    <!-- Structured Data -->
+    <meta name="robots" content="index, follow"/>
+    <script type="application/ld+json">{
+      "@context":"https://schema.org","@type":"WebApplication",
+      "name":"Phase Portraits — Interactive Guide to Planar Systems",
+      "description":"Interactive educational tool for visualizing phase portraits of 2×2 linear ODE systems. Explore nodes, saddles, foci, and centers with real-time simulations.",
+      "url":"https://ayman-alashkar.github.io/phase_portrait/",
+      "applicationCategory":"EducationalApplication",
+      "author":{"@type":"Person","name":"Ayman Alashkar","email":"a.alashkar@oist.jp","affiliation":{"@type":"Organization","name":"Okinawa Institute of Science and Technology (OIST)","url":"https://www.oist.jp"}},
+      "educationalLevel":"University","inLanguage":"en",
+      "keywords":"phase portrait, ODE, dynamical systems, eigenvalues, linear systems, planar systems, interactive visualization"
+    }</script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,500;0,9..144,700;1,9..144,400&family=Outfit:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+    :root{
+      --bg:#0c0f1a;--surface:#141827;--card:#1a1f33;--card2:#1f2540;
+      --border:rgba(255,255,255,.06);--border2:rgba(255,255,255,.1);
+      --txt:#e4e8f7;--txt2:#a0a8c8;--txt3:#6b7394;
+      --blue:#4d8eff;--cyan:#22d3ee;--purple:#a78bfa;--green:#34d399;
+      --red:#f87171;--amber:#fbbf24;--pink:#f472b6;
+      --glow:rgba(77,142,255,.15);
+      --radius:12px;--radius2:16px;
+    }
+    *{box-sizing:border-box;margin:0;padding:0;}
+    html{scroll-behavior:smooth;}
 body{
   font-family:'Outfit',sans-serif;background:var(--bg);color:var(--txt);
   line-height:1.6;-webkit-font-smoothing:antialiased;
