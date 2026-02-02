@@ -57,14 +57,6 @@ Each case tab explains:
 - **Stable/Unstable Foci** — complex eigenvalues with nonzero real part
 - **Centers** — pure imaginary eigenvalues
 
-## Technical Details
-
-- **Integration:** 4th-order Runge-Kutta (RK4) with adaptive termination
-- **Rendering:** HTML5 Canvas with DPI-aware (retina) rendering
-- **Eigenvalue computation:** Closed-form 2×2 eigenvalue/eigenvector solver
-- **Animation:** `requestAnimationFrame` loop with time-based stepping
-- **Design:** Dark academic theme with Fraunces serif + Outfit sans-serif typography
-
 ## Usage
 
 ### Quick Start
@@ -87,13 +79,6 @@ open index.html
 - Use **parameter sliders** to change the matrix and see the portrait update live
 - Use **preset pills** to jump to interesting examples
 
-## Deployment
-
-This is a single HTML file. To deploy on GitHub Pages:
-
-1. Rename to `index.html` (or configure your repo accordingly)
-2. Push to your repository
-3. Enable GitHub Pages in repository settings
 
 ## Author
 
@@ -106,5 +91,4 @@ This project is open source and available under the [MIT License](LICENSE).
 
 ## Acknowledgments
 
-- Mathematical content follows standard ODE textbook presentations (§2.2 — Phase Portraits and Planar Systems)
-- Built as a teaching aid for ODE courses at OIST
+- Mathematical content follows the book "Ordinary and Partial Differential Equations An Introduction to Dynamical Systems" By John W. Cain, Ph.D. and Angela M. Reynolds, Ph.D.
